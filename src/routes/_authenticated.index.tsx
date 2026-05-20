@@ -1,23 +1,47 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
-import { useLocalStorage } from "@/hooks/use-local-storage";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, Flame, CheckCircle2, NotebookPen } from "lucide-react";
 
-type Task = { id: string; title: string; done: boolean };
-type Habit = { id: string; name: string; days: string[] };
-
-export const Route = createFileRoute("/")({
-  component: Today,
-});
+export const Route = createFileRoute("/_authenticated/")({ component: Today });
 
 function Today() {
-  const [tasks] = useLocalStorage<Task[]>("lifeos.tasks", []);
-  const [habits] = useLocalStorage<Habit[]>("lifeos.habits", []);
   const today = new Date().toISOString().slice(0, 10);
 
-  const open = tasks.filter(t => !t.done);
+  const tasksQ = useQuery({
+    queryKey: ["tasks"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tasks").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const habitsQ = useQuery({
+    queryKey: ["habits"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("habits").select("*").order("created_at");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const logsQ = useQuery({
+    queryKey: ["habit_logs", today],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("habit_logs").select("habit_id").eq("date", today);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const tasks = tasksQ.data ?? [];
+  const habits = habitsQ.data ?? [];
+  const logsToday = logsQ.data ?? [];
+
+  const open = tasks.filter(t => !t.completed);
   const doneCount = tasks.length - open.length;
-  const habitDone = habits.filter(h => h.days.includes(today)).length;
 
   const now = new Date();
   const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening";
@@ -32,7 +56,7 @@ function Today() {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
         <Stat label="Open tasks" value={open.length} />
         <Stat label="Completed" value={doneCount} />
-        <Stat label="Habits done" value={`${habitDone}/${habits.length || 0}`} />
+        <Stat label="Habits done" value={`${logsToday.length}/${habits.length || 0}`} />
       </div>
 
       <Section title="Focus today" to="/tasks" cta="All tasks">
@@ -58,7 +82,9 @@ function Today() {
             {habits.slice(0, 3).map(h => (
               <li key={h.id} className="flex items-center justify-between rounded-xl bg-muted/60 px-4 py-3">
                 <span className="text-sm">{h.name}</span>
-                <span className="text-xs text-muted-foreground">{h.days.length} day streak</span>
+                <span className="text-xs text-muted-foreground">
+                  {logsToday.some(l => l.habit_id === h.id) ? "Done today" : "Pending"}
+                </span>
               </li>
             ))}
           </ul>
