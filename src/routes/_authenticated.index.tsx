@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, Flame, CheckCircle2, NotebookPen } from "lucide-react";
+import { PowerMeter } from "@/components/power-meter";
 
 export const Route = createFileRoute("/_authenticated/")({ component: Today });
 
@@ -52,6 +53,8 @@ function Today() {
       <p className="text-muted-foreground text-base leading-relaxed -mt-2 mb-8">
         A calm space to focus on what matters today. Move through your tasks, tend your habits, and capture what's on your mind.
       </p>
+
+      <PowerMeter />
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
         <Stat label="Open tasks" value={open.length} />

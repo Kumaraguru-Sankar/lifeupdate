@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated.tasks'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated.notes'
 import { Route as AuthenticatedJournalRouteImport } from './routes/_authenticated.journal'
 import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated.habits'
@@ -34,6 +35,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/habits': typeof AuthenticatedHabitsRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/notes': typeof AuthenticatedNotesRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/tasks': typeof AuthenticatedTasksRoute
 }
 export interface FileRoutesByTo {
@@ -65,6 +72,7 @@ export interface FileRoutesByTo {
   '/habits': typeof AuthenticatedHabitsRoute
   '/journal': typeof AuthenticatedJournalRoute
   '/notes': typeof AuthenticatedNotesRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -75,14 +83,22 @@ export interface FileRoutesById {
   '/_authenticated/habits': typeof AuthenticatedHabitsRoute
   '/_authenticated/journal': typeof AuthenticatedJournalRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/habits' | '/journal' | '/notes' | '/tasks'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/habits'
+    | '/journal'
+    | '/notes'
+    | '/profile'
+    | '/tasks'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/habits' | '/journal' | '/notes' | '/tasks' | '/'
+  to: '/login' | '/habits' | '/journal' | '/notes' | '/profile' | '/tasks' | '/'
   id:
     | '__root__'
     | '/_authenticated'
@@ -90,6 +106,7 @@ export interface FileRouteTypes {
     | '/_authenticated/habits'
     | '/_authenticated/journal'
     | '/_authenticated/notes'
+    | '/_authenticated/profile'
     | '/_authenticated/tasks'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -129,6 +146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTasksRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/notes': {
       id: '/_authenticated/notes'
       path: '/notes'
@@ -157,6 +181,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
   AuthenticatedJournalRoute: typeof AuthenticatedJournalRoute
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
@@ -165,6 +190,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
   AuthenticatedJournalRoute: AuthenticatedJournalRoute,
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }

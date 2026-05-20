@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun, LogOut } from "lucide-react";
+import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun, LogOut, User } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,7 @@ const nav = [
   { to: "/habits", label: "Habits", icon: Flame },
   { to: "/notes", label: "Notes", icon: NotebookPen },
   { to: "/journal", label: "Journal", icon: BookOpen },
+  { to: "/profile", label: "Me", icon: User },
 ] as const;
 
 export function AppShell({ title, subtitle, children, action }: {
