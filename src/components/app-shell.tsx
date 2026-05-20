@@ -1,7 +1,9 @@
-import { Link, useLocation } from "@tanstack/react-router";
-import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun } from "lucide-react";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun, LogOut } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 const nav = [
   { to: "/", label: "Today", icon: Home },
@@ -19,10 +21,17 @@ export function AppShell({ title, subtitle, children, action }: {
 }) {
   const { pathname } = useLocation();
   const { theme, toggle } = useTheme();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    qc.clear();
+    navigate({ to: "/login" });
+  };
 
   return (
     <div className="min-h-dvh bg-background text-foreground flex">
-      {/* Desktop sidebar */}
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-border/60 bg-surface px-5 py-8">
         <Link to="/" className="flex items-center gap-2 mb-10">
           <span className="size-8 rounded-xl bg-foreground text-background grid place-items-center font-display text-lg">L</span>
@@ -45,15 +54,17 @@ export function AppShell({ title, subtitle, children, action }: {
             );
           })}
         </nav>
-        <div className="mt-auto">
+        <div className="mt-auto space-y-1">
           <button onClick={toggle} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
             {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
             {theme === "dark" ? "Light mode" : "Dark mode"}
           </button>
+          <button onClick={signOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+            <LogOut className="size-4" /> Sign out
+          </button>
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border/50">
           <div className="px-5 md:px-10 pt-7 pb-5 max-w-3xl">
@@ -71,7 +82,6 @@ export function AppShell({ title, subtitle, children, action }: {
         </div>
       </main>
 
-      {/* Mobile bottom tab bar */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border/60 bg-background/90 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-stretch justify-around">
           {nav.map(({ to, label, icon: Icon }) => {
