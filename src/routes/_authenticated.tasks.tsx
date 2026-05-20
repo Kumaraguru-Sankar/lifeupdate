@@ -38,7 +38,10 @@ function Tasks() {
       const { error } = await supabase.from("tasks").update({ completed: !t.completed }).eq("id", t.id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["tasks"] });
+      qc.invalidateQueries({ queryKey: ["xp"] });
+    },
   });
 
   const remove = useMutation({

@@ -63,7 +63,10 @@ function Habits() {
         if (error) throw error;
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["habit_logs"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["habit_logs"] });
+      qc.invalidateQueries({ queryKey: ["xp"] });
+    },
   });
 
   const submit = (e: React.FormEvent) => {
