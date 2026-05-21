@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_reviews: {
+        Row: {
+          created_at: string
+          energy: number | null
+          id: string
+          lessons: string | null
+          review_date: string
+          tomorrow: string | null
+          updated_at: string
+          user_id: string
+          wins: string | null
+        }
+        Insert: {
+          created_at?: string
+          energy?: number | null
+          id?: string
+          lessons?: string | null
+          review_date?: string
+          tomorrow?: string | null
+          updated_at?: string
+          user_id: string
+          wins?: string | null
+        }
+        Update: {
+          created_at?: string
+          energy?: number | null
+          id?: string
+          lessons?: string | null
+          review_date?: string
+          tomorrow?: string | null
+          updated_at?: string
+          user_id?: string
+          wins?: string | null
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          completed: boolean
+          created_at: string
+          description: string | null
+          id: string
+          progress: number
+          target_date: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          progress?: number
+          target_date?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          progress?: number
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       habit_logs: {
         Row: {
           created_at: string
@@ -70,6 +166,42 @@ export type Database = {
           id?: string
           name?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      health_logs: {
+        Row: {
+          created_at: string
+          id: string
+          log_date: string
+          sleep_hours: number | null
+          steps: number | null
+          updated_at: string
+          user_id: string
+          water_glasses: number | null
+          workout_min: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          sleep_hours?: number | null
+          steps?: number | null
+          updated_at?: string
+          user_id: string
+          water_glasses?: number | null
+          workout_min?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          sleep_hours?: number | null
+          steps?: number | null
+          updated_at?: string
+          user_id?: string
+          water_glasses?: number | null
+          workout_min?: number | null
         }
         Relationships: []
       }
@@ -130,27 +262,60 @@ export type Database = {
         }
         Relationships: []
       }
+      pomodoro_sessions: {
+        Row: {
+          completed_at: string
+          duration_min: number
+          id: string
+          mode: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          duration_min: number
+          id?: string
+          mode?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          duration_min?: number
+          id?: string
+          mode?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          archetype: string | null
           avatar_url: string | null
           created_at: string
           display_name: string | null
           id: string
+          onboarding_completed: boolean
           updated_at: string
+          vision: string | null
         }
         Insert: {
+          archetype?: string | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           id: string
+          onboarding_completed?: boolean
           updated_at?: string
+          vision?: string | null
         }
         Update: {
+          archetype?: string | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          onboarding_completed?: boolean
           updated_at?: string
+          vision?: string | null
         }
         Relationships: []
       }
@@ -162,6 +327,8 @@ export type Database = {
           id: string
           notes: string | null
           priority: string
+          recurrence: string
+          recurrence_parent_id: string | null
           title: string
           updated_at: string
           user_id: string
@@ -173,6 +340,8 @@ export type Database = {
           id?: string
           notes?: string | null
           priority?: string
+          recurrence?: string
+          recurrence_parent_id?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -184,6 +353,8 @@ export type Database = {
           id?: string
           notes?: string | null
           priority?: string
+          recurrence?: string
+          recurrence_parent_id?: string | null
           title?: string
           updated_at?: string
           user_id?: string
