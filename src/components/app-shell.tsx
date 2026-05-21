@@ -1,16 +1,28 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun, LogOut, User } from "lucide-react";
+import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun, LogOut, User, Target, Timer, Sparkles, Sun as SunIcon, Command } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCommandPalette } from "@/components/command-palette";
 
-const nav = [
+const primaryNav = [
   { to: "/", label: "Today", icon: Home },
   { to: "/tasks", label: "Tasks", icon: CheckCircle2 },
   { to: "/habits", label: "Habits", icon: Flame },
+  { to: "/goals", label: "Goals", icon: Target },
+  { to: "/focus", label: "Focus", icon: Timer },
   { to: "/notes", label: "Notes", icon: NotebookPen },
   { to: "/journal", label: "Journal", icon: BookOpen },
+  { to: "/review", label: "Review", icon: SunIcon },
+  { to: "/assistant", label: "Assistant", icon: Sparkles },
+] as const;
+
+const mobileNav = [
+  { to: "/", label: "Today", icon: Home },
+  { to: "/tasks", label: "Tasks", icon: CheckCircle2 },
+  { to: "/focus", label: "Focus", icon: Timer },
+  { to: "/assistant", label: "AI", icon: Sparkles },
   { to: "/profile", label: "Me", icon: User },
 ] as const;
 
@@ -24,6 +36,7 @@ export function AppShell({ title, subtitle, children, action }: {
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { open: openPalette } = useCommandPalette();
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -33,70 +46,98 @@ export function AppShell({ title, subtitle, children, action }: {
 
   return (
     <div className="min-h-dvh bg-background text-foreground flex">
-      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-border/60 bg-surface px-5 py-8">
-        <Link to="/" className="flex items-center gap-2 mb-10">
+      {/* Sidebar (md+) */}
+      <aside className="hidden md:flex w-60 lg:w-64 shrink-0 flex-col border-r border-border/60 bg-surface/60 px-4 lg:px-5 py-7">
+        <Link to="/" className="flex items-center gap-2 mb-8 px-1">
           <span className="size-8 rounded-xl bg-foreground text-background grid place-items-center font-display text-lg">L</span>
           <span className="font-display text-2xl">LifeOS</span>
         </Link>
-        <nav className="flex flex-col gap-1">
-          {nav.map(({ to, label, icon: Icon }) => {
+
+        <button
+          onClick={openPalette}
+          className="mb-6 flex items-center justify-between gap-2 rounded-xl border border-border/60 bg-card/60 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors"
+        >
+          <span className="inline-flex items-center gap-2"><Command className="size-3.5" /> Quick command</span>
+          <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-muted">⌘K</kbd>
+        </button>
+
+        <nav className="flex flex-col gap-0.5">
+          {primaryNav.map(({ to, label, icon: Icon }) => {
             const active = pathname === to;
             return (
               <Link
                 key={to}
                 to={to}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
-                  active ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  "group flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] transition-all duration-300 ease-out-soft tap-scale",
+                  active
+                    ? "bg-foreground text-background shadow-soft"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                <Icon className="size-4" /> {label}
+                <Icon className={cn("size-4 transition-transform", active && "scale-105")} strokeWidth={active ? 2.2 : 1.7} />
+                <span className="truncate">{label}</span>
               </Link>
             );
           })}
         </nav>
-        <div className="mt-auto space-y-1">
-          <button onClick={toggle} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+
+        <div className="mt-auto space-y-0.5 pt-6">
+          <Link to="/profile" className={cn("flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] transition-colors", pathname === "/profile" ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>
+            <User className="size-4" /> Profile
+          </Link>
+          <button onClick={toggle} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
             {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-            {theme === "dark" ? "Light mode" : "Dark mode"}
+            {theme === "dark" ? "Light" : "Dark"}
           </button>
-          <button onClick={signOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+          <button onClick={signOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-[13px] text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
             <LogOut className="size-4" /> Sign out
           </button>
         </div>
       </aside>
 
+      {/* Main column */}
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-border/50">
-          <div className="px-5 md:px-10 pt-7 pb-5 max-w-3xl">
+        <header className="sticky top-0 z-20 glass-strong border-b border-border/40">
+          <div className="px-5 md:px-10 pt-6 md:pt-8 pb-4 md:pb-5 max-w-3xl xl:max-w-4xl">
             <div className="flex items-start justify-between gap-4">
-              <div>
-                {subtitle && <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-2">{subtitle}</p>}
-                <h1 className="font-display text-4xl md:text-5xl leading-none">{title}</h1>
+              <div className="min-w-0">
+                {subtitle && <p className="text-[10px] md:text-xs uppercase tracking-[0.22em] text-muted-foreground mb-2">{subtitle}</p>}
+                <h1 className="font-display text-[2.25rem] md:text-5xl leading-[1.05] truncate">{title}</h1>
               </div>
-              {action}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={openPalette}
+                  className="md:hidden grid place-items-center size-10 rounded-full bg-card border border-border/60 text-muted-foreground tap-scale"
+                  aria-label="Command palette"
+                >
+                  <Command className="size-4" />
+                </button>
+                {action}
+              </div>
             </div>
           </div>
         </header>
-        <div className="flex-1 px-5 md:px-10 py-6 max-w-3xl w-full pb-28 md:pb-10">
+        <div className="flex-1 px-5 md:px-10 py-6 max-w-3xl xl:max-w-4xl w-full pb-28 md:pb-12 fade-in-up">
           {children}
         </div>
       </main>
 
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border/60 bg-background/90 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 glass-strong border-t border-border/40 pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-stretch justify-around">
-          {nav.map(({ to, label, icon: Icon }) => {
+          {mobileNav.map(({ to, label, icon: Icon }) => {
             const active = pathname === to;
             return (
               <Link
                 key={to}
                 to={to}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-3 py-2.5 text-[10px] transition-colors flex-1",
+                  "flex flex-col items-center gap-1 px-3 py-2.5 text-[10px] tap-scale flex-1 transition-colors",
                   active ? "text-foreground" : "text-muted-foreground"
                 )}
               >
-                <Icon className={cn("size-5 transition-transform", active && "scale-110")} strokeWidth={active ? 2.4 : 1.8} />
+                <Icon className={cn("size-5 transition-transform duration-300 ease-out-soft", active && "scale-110")} strokeWidth={active ? 2.4 : 1.8} />
                 <span className="tracking-wide">{label}</span>
               </Link>
             );
