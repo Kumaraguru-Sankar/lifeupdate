@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { Plus, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HabitAnalytics } from "@/components/habit-analytics";
 
 type Habit = { id: string; name: string };
 
@@ -81,11 +82,13 @@ function Habits() {
 
   return (
     <AppShell title="Habits" subtitle="Tend the small things daily">
+      <HabitAnalytics />
+
       <form
         onSubmit={submit}
-        className="flex items-center gap-2 rounded-2xl bg-card border border-border/60 px-3 py-2 mb-6 focus-within:border-accent/60 transition-colors"
+        className="flex items-center gap-2 rounded-2xl bg-card border border-border/60 px-3 py-2 mb-6 focus-within:border-accent/60 transition-colors shadow-soft"
       >
-        <button type="submit" className="grid place-items-center size-9 rounded-xl bg-accent text-accent-foreground">
+        <button type="submit" className="grid place-items-center size-9 rounded-xl bg-accent text-accent-foreground tap-scale">
           <Plus className="size-4" />
         </button>
         <input
@@ -102,11 +105,11 @@ function Habits() {
           <p className="mt-3 text-sm text-muted-foreground">Pick one habit to start. Consistency beats intensity.</p>
         </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-3 stagger">
           {habits.map(h => {
             const streak = last7.filter(d => isDone(h.id, dayKey(d))).length;
             return (
-              <li key={h.id} className="rounded-2xl bg-card border border-border/60 p-4">
+              <li key={h.id} className="rounded-2xl bg-card border border-border/60 p-4 shadow-soft">
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-medium">{h.name}</span>
                   <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
@@ -122,8 +125,8 @@ function Habits() {
                         key={k}
                         onClick={() => toggle.mutate({ habitId: h.id, date: k, exists: active })}
                         className={cn(
-                          "flex-1 flex flex-col items-center gap-1 py-2 rounded-lg transition-colors",
-                          active ? "bg-accent text-accent-foreground" : "bg-muted/50 hover:bg-muted text-muted-foreground"
+                          "flex-1 flex flex-col items-center gap-1 py-2 rounded-lg transition-all duration-300 ease-out-soft tap-scale",
+                          active ? "bg-accent text-accent-foreground scale-[1.02]" : "bg-muted/50 hover:bg-muted text-muted-foreground"
                         )}
                       >
                         <span className="text-[10px] uppercase tracking-wider">{d.toLocaleDateString(undefined, { weekday: "short" })[0]}</span>
