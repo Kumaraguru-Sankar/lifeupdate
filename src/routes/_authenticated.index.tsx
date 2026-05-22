@@ -201,7 +201,7 @@ function Section({ title, to, cta, children }: { title: string; to: string; cta:
   return (
     <section className="flex flex-col">
       <div className="flex items-center justify-between mb-3 px-1">
-        <h2 className="font-display text-xl lg:text-2xl">{title}</h2>
+        <h2 className="font-display text-2xl lg:text-3xl font-semibold tracking-tight">{title}</h2>
         <Link to={to} className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors">
           {cta} <ArrowRight className="size-3" />
         </Link>
