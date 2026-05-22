@@ -144,8 +144,27 @@ function Today() {
         </Section>
       </div>
 
-      {/* Body / Health */}
-      <HealthWidget />
+      {/* Health + Finance quick links */}
+      <div className="grid gap-5 md:grid-cols-2 mb-8">
+        <Link to="/health" className="group rounded-3xl border border-border/60 bg-gradient-to-br from-card to-muted/30 p-6 shadow-soft hover:shadow-lift transition-all ease-out-soft">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Wellness</span>
+            <Heart className="size-5 text-accent" />
+          </div>
+          <h2 className="font-display text-3xl font-semibold">Health</h2>
+          <p className="text-sm text-muted-foreground mt-1">Steps, sleep, nutrition, BMI & calories.</p>
+          <span className="text-xs text-accent inline-flex items-center gap-1 mt-3 group-hover:gap-2 transition-all">Open dashboard <ArrowRight className="size-3" /></span>
+        </Link>
+        <Link to="/finance" className="group rounded-3xl border border-border/60 bg-gradient-to-br from-card to-muted/30 p-6 shadow-soft hover:shadow-lift transition-all ease-out-soft">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Money</span>
+            <Wallet className="size-5 text-accent" />
+          </div>
+          <h2 className="font-display text-3xl font-semibold">Finance</h2>
+          <p className="text-sm text-muted-foreground mt-1">Income, expenses, subscriptions & investments.</p>
+          <span className="text-xs text-accent inline-flex items-center gap-1 mt-3 group-hover:gap-2 transition-all">Open dashboard <ArrowRight className="size-3" /></span>
+        </Link>
+      </div>
 
       {/* Analytics + capture */}
       <div className="grid gap-5 lg:gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] mb-6">
