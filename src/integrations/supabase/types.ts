@@ -201,6 +201,7 @@ export type Database = {
       }
       health_logs: {
         Row: {
+          calories_burned: number
           created_at: string
           id: string
           log_date: string
@@ -212,6 +213,7 @@ export type Database = {
           workout_min: number | null
         }
         Insert: {
+          calories_burned?: number
           created_at?: string
           id?: string
           log_date?: string
@@ -223,6 +225,7 @@ export type Database = {
           workout_min?: number | null
         }
         Update: {
+          calories_burned?: number
           created_at?: string
           id?: string
           log_date?: string
