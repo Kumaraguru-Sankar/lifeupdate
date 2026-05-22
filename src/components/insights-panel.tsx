@@ -21,10 +21,11 @@ export function InsightsPanel() {
     queryKey: ["pomodoros_recent"],
     queryFn: async () => {
       const since = new Date(); since.setDate(since.getDate() - 6);
-      const { data } = await supabase.from("pomodoro_sessions").select("started_at,duration_min").gte("started_at", since.toISOString());
-      return (data ?? []) as { started_at: string; duration_min: number }[];
+      const { data } = await supabase.from("pomodoro_sessions").select("completed_at,duration_min").gte("completed_at", since.toISOString());
+      return (data ?? []) as { completed_at: string; duration_min: number }[];
     },
   });
+
 
   const { data: logs30 = [] } = useQuery({
     queryKey: ["habit_logs_streak_30"],
@@ -35,7 +36,7 @@ export function InsightsPanel() {
     },
   });
 
-  const focusMinToday = pomos.filter(p => p.started_at.slice(0, 10) === today).reduce((a, b) => a + (b.duration_min ?? 0), 0);
+  const focusMinToday = pomos.filter(p => p.completed_at.slice(0, 10) === today).reduce((a, b) => a + (b.duration_min ?? 0), 0);
 
   const streak = useMemo(() => {
     const set = new Set(logs30.map(l => l.date));
@@ -53,7 +54,7 @@ export function InsightsPanel() {
     for (let i = 6; i >= 0; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
       const key = d.toISOString().slice(0, 10);
-      const min = pomos.filter(p => p.started_at.slice(0, 10) === key).reduce((a, b) => a + (b.duration_min ?? 0), 0);
+      const min = pomos.filter(p => p.completed_at.slice(0, 10) === key).reduce((a, b) => a + (b.duration_min ?? 0), 0);
       days.push({ label: d.toLocaleDateString(undefined, { weekday: "narrow" }), min });
     }
     return days;
