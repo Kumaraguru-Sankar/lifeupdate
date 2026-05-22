@@ -2,9 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, Flame, CheckCircle2, NotebookPen, Target, Timer, Sparkles, Sun } from "lucide-react";
+import { ArrowRight, Flame, CheckCircle2, NotebookPen, Target, Timer, Sparkles, Sun, Heart, Wallet } from "lucide-react";
 import { PowerMeter } from "@/components/power-meter";
-import { HealthWidget } from "@/components/health-widget";
 import { HabitAnalytics } from "@/components/habit-analytics";
 import { InsightsPanel } from "@/components/insights-panel";
 
