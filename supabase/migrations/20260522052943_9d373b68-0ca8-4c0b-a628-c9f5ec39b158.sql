@@ -1,0 +1,1 @@
+ALTER TABLE public.health_logs ADD COLUMN IF NOT EXISTS calories_burned integer NOT NULL DEFAULT 0 CHECK (calories_burned >= 0 AND calories_burned <= 30000);

@@ -74,6 +74,36 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          id: string
+          note: string | null
+          spent_on: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          spent_on?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          spent_on?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           completed: boolean
@@ -171,6 +201,7 @@ export type Database = {
       }
       health_logs: {
         Row: {
+          calories_burned: number
           created_at: string
           id: string
           log_date: string
@@ -182,6 +213,7 @@ export type Database = {
           workout_min: number | null
         }
         Insert: {
+          calories_burned?: number
           created_at?: string
           id?: string
           log_date?: string
@@ -193,6 +225,7 @@ export type Database = {
           workout_min?: number | null
         }
         Update: {
+          calories_burned?: number
           created_at?: string
           id?: string
           log_date?: string
@@ -202,6 +235,69 @@ export type Database = {
           user_id?: string
           water_glasses?: number | null
           workout_min?: number | null
+        }
+        Relationships: []
+      }
+      incomes: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          received_on: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          received_on?: string
+          source: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          received_on?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      investments: {
+        Row: {
+          asset_type: string
+          created_at: string
+          current_value: number
+          id: string
+          invested: number
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asset_type: string
+          created_at?: string
+          current_value: number
+          id?: string
+          invested: number
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          current_value?: number
+          id?: string
+          invested?: number
+          name?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -262,6 +358,45 @@ export type Database = {
         }
         Relationships: []
       }
+      nutrition_logs: {
+        Row: {
+          calories: number
+          carbs_g: number
+          created_at: string
+          fat_g: number
+          id: string
+          log_date: string
+          meal_type: string
+          name: string
+          protein_g: number
+          user_id: string
+        }
+        Insert: {
+          calories?: number
+          carbs_g?: number
+          created_at?: string
+          fat_g?: number
+          id?: string
+          log_date?: string
+          meal_type: string
+          name: string
+          protein_g?: number
+          user_id: string
+        }
+        Update: {
+          calories?: number
+          carbs_g?: number
+          created_at?: string
+          fat_g?: number
+          id?: string
+          log_date?: string
+          meal_type?: string
+          name?: string
+          protein_g?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       pomodoro_sessions: {
         Row: {
           completed_at: string
@@ -288,34 +423,94 @@ export type Database = {
       }
       profiles: {
         Row: {
+          activity_level: string | null
+          age: number | null
           archetype: string | null
           avatar_url: string | null
           created_at: string
           display_name: string | null
+          gender: string | null
+          height_cm: number | null
           id: string
           onboarding_completed: boolean
           updated_at: string
           vision: string | null
         }
         Insert: {
+          activity_level?: string | null
+          age?: number | null
           archetype?: string | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          gender?: string | null
+          height_cm?: number | null
           id: string
           onboarding_completed?: boolean
           updated_at?: string
           vision?: string | null
         }
         Update: {
+          activity_level?: string | null
+          age?: number | null
           archetype?: string | null
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          gender?: string | null
+          height_cm?: number | null
           id?: string
           onboarding_completed?: boolean
           updated_at?: string
           vision?: string | null
+        }
+        Relationships: []
+      }
+      step_goals: {
+        Row: {
+          daily_target: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          daily_target?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          daily_target?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          cycle: string
+          id: string
+          name: string
+          next_renewal: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          cycle?: string
+          id?: string
+          name: string
+          next_renewal: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          cycle?: string
+          id?: string
+          name?: string
+          next_renewal?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -358,6 +553,30 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      weight_logs: {
+        Row: {
+          created_at: string
+          id: string
+          log_date: string
+          user_id: string
+          weight_kg: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          user_id: string
+          weight_kg: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          user_id?: string
+          weight_kg?: number
         }
         Relationships: []
       }

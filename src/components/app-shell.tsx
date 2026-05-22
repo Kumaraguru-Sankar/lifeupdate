@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun, LogOut, User, Target, Timer, Sparkles, Sun as SunIcon, Command, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun, LogOut, User, Target, Timer, Sparkles, Sun as SunIcon, Command, PanelRightClose, PanelRightOpen, Heart, Wallet } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,8 @@ const primaryNav = [
   { to: "/habits", label: "Habits", icon: Flame },
   { to: "/goals", label: "Goals", icon: Target },
   { to: "/focus", label: "Focus", icon: Timer },
+  { to: "/health", label: "Health", icon: Heart },
+  { to: "/finance", label: "Finance", icon: Wallet },
   { to: "/notes", label: "Notes", icon: NotebookPen },
   { to: "/journal", label: "Journal", icon: BookOpen },
   { to: "/review", label: "Review", icon: SunIcon },
@@ -21,8 +23,8 @@ const primaryNav = [
 
 const mobileNav = [
   { to: "/", label: "Today", icon: Home },
-  { to: "/tasks", label: "Tasks", icon: CheckCircle2 },
-  { to: "/focus", label: "Focus", icon: Timer },
+  { to: "/health", label: "Health", icon: Heart },
+  { to: "/finance", label: "Money", icon: Wallet },
   { to: "/assistant", label: "AI", icon: Sparkles },
   { to: "/profile", label: "Me", icon: User },
 ] as const;
