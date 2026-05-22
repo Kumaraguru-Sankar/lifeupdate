@@ -54,9 +54,13 @@ export const chatAssistant = createServerFn({ method: "POST" })
       ...safeHistory,
     ];
 
+
     // 3) Call Lovable AI Gateway
     const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("LOVABLE_API_KEY not configured");
+    if (!key) {
+      console.error("[assistant] LOVABLE_API_KEY missing");
+      throw new Error("The assistant is temporarily unavailable. Please try again later.");
+    }
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -64,9 +68,12 @@ export const chatAssistant = createServerFn({ method: "POST" })
       body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages: msgs }),
     });
 
-    if (res.status === 429) throw new Error("Rate limit reached — please try again in a moment.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Add credits in Settings → Workspace → Usage.");
-    if (!res.ok) throw new Error(`Assistant error (${res.status})`);
+    if (res.status === 429) throw new Error("You're sending messages too quickly. Please wait a moment and try again.");
+    if (res.status === 402) throw new Error("The assistant is temporarily unavailable. Please try again later.");
+    if (!res.ok) {
+      console.error("[assistant] gateway error", res.status);
+      throw new Error("The assistant is temporarily unavailable. Please try again later.");
+    }
 
     const json = await res.json();
     const reply: string = json?.choices?.[0]?.message?.content ?? "…";
