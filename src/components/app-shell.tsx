@@ -1,10 +1,11 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun, LogOut, User, Target, Timer, Sparkles, Sun as SunIcon, Command } from "lucide-react";
+import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Moon, Sun, LogOut, User, Target, Timer, Sparkles, Sun as SunIcon, Command, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCommandPalette } from "@/components/command-palette";
+import { useState } from "react";
 
 const primaryNav = [
   { to: "/", label: "Today", icon: Home },
@@ -26,17 +27,21 @@ const mobileNav = [
   { to: "/profile", label: "Me", icon: User },
 ] as const;
 
-export function AppShell({ title, subtitle, children, action }: {
+export function AppShell({ title, subtitle, children, action, rightPanel, wide }: {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   action?: React.ReactNode;
+  rightPanel?: React.ReactNode;
+  /** Allow main content to fill full width (no max-w cap). Defaults true when rightPanel is present. */
+  wide?: boolean;
 }) {
   const { pathname } = useLocation();
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { open: openPalette } = useCommandPalette();
+  const [panelOpen, setPanelOpen] = useState(true);
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -44,10 +49,13 @@ export function AppShell({ title, subtitle, children, action }: {
     navigate({ to: "/login" });
   };
 
+  const isWide = wide ?? !!rightPanel;
+  const showRight = !!rightPanel && panelOpen;
+
   return (
     <div className="min-h-dvh bg-background text-foreground flex">
       {/* Sidebar (md+) */}
-      <aside className="hidden md:flex w-60 lg:w-64 shrink-0 flex-col border-r border-border/60 bg-surface/60 px-4 lg:px-5 py-7">
+      <aside className="hidden md:flex w-[240px] lg:w-[260px] shrink-0 flex-col border-r border-border/60 bg-surface/60 px-4 py-7 sticky top-0 h-dvh">
         <Link to="/" className="flex items-center gap-2 mb-8 px-1">
           <span className="size-8 rounded-xl bg-foreground text-background grid place-items-center font-display text-lg">L</span>
           <span className="font-display text-2xl">LifeOS</span>
@@ -61,7 +69,7 @@ export function AppShell({ title, subtitle, children, action }: {
           <kbd className="text-[10px] px-1.5 py-0.5 rounded bg-muted">⌘K</kbd>
         </button>
 
-        <nav className="flex flex-col gap-0.5">
+        <nav className="flex flex-col gap-0.5 overflow-y-auto -mx-1 px-1">
           {primaryNav.map(({ to, label, icon: Icon }) => {
             const active = pathname === to;
             return (
@@ -99,11 +107,14 @@ export function AppShell({ title, subtitle, children, action }: {
       {/* Main column */}
       <main className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-20 glass-strong border-b border-border/40">
-          <div className="px-5 md:px-10 pt-6 md:pt-8 pb-4 md:pb-5 max-w-3xl xl:max-w-4xl">
+          <div className={cn(
+            "px-5 md:px-8 xl:px-12 pt-6 md:pt-8 pb-4 md:pb-5 mx-auto w-full",
+            isWide ? "max-w-[1600px]" : "max-w-3xl xl:max-w-4xl"
+          )}>
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 {subtitle && <p className="text-[10px] md:text-xs uppercase tracking-[0.22em] text-muted-foreground mb-2">{subtitle}</p>}
-                <h1 className="font-display text-[2.25rem] md:text-5xl leading-[1.05] truncate">{title}</h1>
+                <h1 className="font-display text-[2.25rem] md:text-5xl xl:text-6xl leading-[1.05] truncate">{title}</h1>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -113,13 +124,39 @@ export function AppShell({ title, subtitle, children, action }: {
                 >
                   <Command className="size-4" />
                 </button>
+                {rightPanel && (
+                  <button
+                    onClick={() => setPanelOpen(o => !o)}
+                    className="hidden xl:grid place-items-center size-10 rounded-full bg-card border border-border/60 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Toggle insights panel"
+                  >
+                    {panelOpen ? <PanelRightClose className="size-4" /> : <PanelRightOpen className="size-4" />}
+                  </button>
+                )}
                 {action}
               </div>
             </div>
           </div>
         </header>
-        <div className="flex-1 px-5 md:px-10 py-6 max-w-3xl xl:max-w-4xl w-full pb-28 md:pb-12 fade-in-up">
-          {children}
+
+        <div className={cn(
+          "flex-1 mx-auto w-full px-5 md:px-8 xl:px-12 py-6 md:py-8 pb-28 md:pb-12 fade-in-up",
+          isWide ? "max-w-[1600px]" : "max-w-3xl xl:max-w-4xl"
+        )}>
+          {rightPanel ? (
+            <div className={cn("grid gap-6 lg:gap-8", showRight ? "xl:grid-cols-[minmax(0,1fr)_340px]" : "grid-cols-1")}>
+              <div className="min-w-0">{children}</div>
+              {showRight && (
+                <aside className="hidden xl:block">
+                  <div className="sticky top-[148px] space-y-5 max-h-[calc(100dvh-180px)] overflow-y-auto pr-1 -mr-1">
+                    {rightPanel}
+                  </div>
+                </aside>
+              )}
+            </div>
+          ) : (
+            children
+          )}
         </div>
       </main>
 
