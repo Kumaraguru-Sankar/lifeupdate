@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, Flame, CheckCircle2, NotebookPen, Target, Timer, Sparkles, Sun } from "lucide-react";
 import { PowerMeter } from "@/components/power-meter";
 import { HealthWidget } from "@/components/health-widget";
+import { HabitAnalytics } from "@/components/habit-analytics";
+import { InsightsPanel } from "@/components/insights-panel";
 
 export const Route = createFileRoute("/_authenticated/")({ component: Today });
 
@@ -32,7 +34,7 @@ function Today() {
   const logsQ = useQuery({
     queryKey: ["habit_logs", today],
     queryFn: async () => {
-      const { data, error } = await supabase.from("habit_logs").select("habit_id").eq("date", today);
+      const { data, error } = await supabase.from("habit_logs").select("habit_id").eq("date", today).order("date");
       if (error) throw error;
       return data;
     },
@@ -60,97 +62,133 @@ function Today() {
   const name = profileQ.data?.display_name ? `, ${profileQ.data.display_name.split(" ")[0]}` : "";
   const dateStr = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
 
+  const habitsDone = logsToday.length;
+  const dailyScore = Math.min(
+    100,
+    Math.round(((doneCount * 12) + (habitsDone * 18)) / Math.max(1, 1))
+  );
+
   return (
-    <AppShell subtitle={dateStr} title={`${greeting}${name}.`}>
+    <AppShell subtitle={dateStr} title={`${greeting}${name}.`} rightPanel={<InsightsPanel />}>
       {profileQ.data?.vision && (
-        <p className="text-muted-foreground text-[15px] leading-relaxed italic -mt-2 mb-8 font-display">"{profileQ.data.vision}"</p>
+        <p className="text-muted-foreground text-[15px] md:text-base leading-relaxed italic -mt-2 mb-8 font-display">
+          "{profileQ.data.vision}"
+        </p>
       )}
 
-      <PowerMeter />
+      {/* Top row: power meter + score / quick actions */}
+      <div className="grid gap-5 lg:gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] mb-6 lg:mb-8">
+        <PowerMeter />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8 stagger">
+        <div className="rounded-3xl bg-card border border-border/60 p-5 lg:p-6 shadow-soft flex flex-col">
+          <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Daily score</p>
+          <div className="flex items-end gap-3 mt-1">
+            <span className="font-display text-5xl lg:text-6xl leading-none">{dailyScore}</span>
+            <span className="text-xs text-muted-foreground pb-2">/ 100</span>
+          </div>
+          <div className="mt-4 h-2 w-full rounded-full bg-muted overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-accent/70 to-accent transition-[width] duration-700 ease-out" style={{ width: `${dailyScore}%` }} />
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-2.5">
+            <Quick to="/focus" label="Focus" icon={Timer} />
+            <Quick to="/goals" label="Goals" icon={Target} />
+            <Quick to="/assistant" label="Ask AI" icon={Sparkles} />
+            <Quick to="/review" label="Review" icon={Sun} />
+          </div>
+        </div>
+      </div>
+
+      {/* Stat strip */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8 stagger">
         <Stat label="Open tasks" value={open.length} />
         <Stat label="Completed" value={doneCount} />
-        <Stat label="Habits done" value={`${logsToday.length}/${habits.length || 0}`} />
-        <Stat label="Streak" value={`${logsToday.length === habits.length && habits.length > 0 ? "✓" : "—"}`} />
+        <Stat label="Habits done" value={`${habitsDone}/${habits.length || 0}`} />
+        <Stat label="Streak" value={`${habitsDone === habits.length && habits.length > 0 ? "✓" : "—"}`} />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-        <Quick to="/focus" label="Focus" icon={Timer} />
-        <Quick to="/goals" label="Goals" icon={Target} />
-        <Quick to="/assistant" label="Ask AI" icon={Sparkles} />
-        <Quick to="/review" label="Review" icon={Sun} />
+      {/* Two column on lg+: Tasks | Habits */}
+      <div className="grid gap-5 lg:gap-6 lg:grid-cols-2 mb-6 lg:mb-8">
+        <Section title="Focus today" to="/tasks" cta="All tasks">
+          {open.length === 0 ? (
+            <Empty icon={<CheckCircle2 className="size-5" />} text="Nothing on your plate. Add a task to begin." />
+          ) : (
+            <ul className="divide-y divide-border/60">
+              {open.slice(0, 6).map(t => (
+                <li key={t.id} className="py-3 flex items-center gap-3">
+                  <span className="size-5 rounded-full border-2 border-border shrink-0" />
+                  <span className="text-[15px] truncate">{t.title}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+
+        <Section title="Habits" to="/habits" cta="Track">
+          {habits.length === 0 ? (
+            <Empty icon={<Flame className="size-5" />} text="No habits yet. Start small — one habit is enough." />
+          ) : (
+            <ul className="space-y-2">
+              {habits.slice(0, 5).map(h => {
+                const done = logsToday.some(l => l.habit_id === h.id);
+                return (
+                  <li key={h.id} className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
+                    <span className="text-sm truncate pr-3">{h.name}</span>
+                    <span className={`text-[11px] uppercase tracking-wider ${done ? "text-accent" : "text-muted-foreground"}`}>
+                      {done ? "Done" : "Pending"}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Section>
       </div>
 
+      {/* Body / Health */}
       <HealthWidget />
 
-      <Section title="Focus today" to="/tasks" cta="All tasks">
-        {open.length === 0 ? (
-          <Empty icon={<CheckCircle2 className="size-5" />} text="Nothing on your plate. Add a task to begin." />
-        ) : (
-          <ul className="divide-y divide-border/60">
-            {open.slice(0, 4).map(t => (
-              <li key={t.id} className="py-3 flex items-center gap-3">
-                <span className="size-5 rounded-full border-2 border-border" />
-                <span className="text-[15px]">{t.title}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
+      {/* Analytics + capture */}
+      <div className="grid gap-5 lg:gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] mb-6">
+        <HabitAnalytics />
 
-      <Section title="Habits" to="/habits" cta="Track">
-        {habits.length === 0 ? (
-          <Empty icon={<Flame className="size-5" />} text="No habits yet. Start small — one habit is enough." />
-        ) : (
-          <ul className="space-y-2">
-            {habits.slice(0, 3).map(h => (
-              <li key={h.id} className="flex items-center justify-between rounded-xl bg-muted/60 px-4 py-3">
-                <span className="text-sm">{h.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  {logsToday.some(l => l.habit_id === h.id) ? "Done today" : "Pending"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
-
-      <Section title="Capture" to="/notes" cta="Notes">
-        <Empty icon={<NotebookPen className="size-5" />} text="Jot down a thought, link, or idea before it slips away." />
-      </Section>
+        <Section title="Capture" to="/notes" cta="Notes">
+          <Empty icon={<NotebookPen className="size-5" />} text="Jot down a thought, link, or idea before it slips away." />
+        </Section>
+      </div>
     </AppShell>
   );
 }
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-2xl bg-surface border border-border/60 px-4 py-4 shadow-soft">
-      <div className="font-display text-3xl">{value}</div>
-      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
+    <div className="rounded-2xl bg-surface border border-border/60 px-4 py-5 shadow-soft hover:border-border transition-colors">
+      <div className="font-display text-3xl lg:text-4xl">{value}</div>
+      <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1.5">{label}</div>
     </div>
   );
 }
 
 function Quick({ to, label, icon: Icon }: { to: string; label: string; icon: React.ComponentType<{ className?: string }> }) {
   return (
-    <Link to={to} className="rounded-2xl bg-card border border-border/60 px-4 py-4 flex flex-col gap-2 hover:border-accent/60 transition-all tap-scale shadow-soft">
+    <Link to={to} className="group rounded-xl bg-muted/40 hover:bg-muted border border-transparent hover:border-border/60 px-3 py-3 flex items-center gap-2.5 transition-all tap-scale">
       <Icon className="size-4 text-accent" />
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-[13px] font-medium">{label}</span>
+      <ArrowRight className="size-3 ml-auto text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
     </Link>
   );
 }
 
 function Section({ title, to, cta, children }: { title: string; to: string; cta: string; children: React.ReactNode }) {
   return (
-    <section className="mb-8">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="font-display text-xl">{title}</h2>
+    <section className="flex flex-col">
+      <div className="flex items-center justify-between mb-3 px-1">
+        <h2 className="font-display text-xl lg:text-2xl">{title}</h2>
         <Link to={to} className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1 transition-colors">
           {cta} <ArrowRight className="size-3" />
         </Link>
       </div>
-      <div className="rounded-2xl bg-card border border-border/60 px-4 py-2 shadow-soft">
+      <div className="flex-1 rounded-2xl bg-card border border-border/60 px-4 py-2 shadow-soft">
         {children}
       </div>
     </section>
