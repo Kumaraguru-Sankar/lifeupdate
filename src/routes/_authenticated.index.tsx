@@ -116,7 +116,7 @@ function Today() {
             </div>
           </div>
 
-          <div className="hidden xs:block">
+          <div className="shrink-0">
             <ProgressRing
               value={game ? game.progress * 100 : 0}
               size={108}
