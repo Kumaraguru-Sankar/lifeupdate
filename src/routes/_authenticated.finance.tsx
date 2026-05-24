@@ -3,7 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, Repeat, LineChart as LineIcon, Plus, Trash2, Calendar } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, Repeat, LineChart as LineIcon, Plus, Trash2, Calendar, Pencil } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/finance")({ component: FinancePage });
