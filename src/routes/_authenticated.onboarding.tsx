@@ -36,7 +36,7 @@ function Onboarding() {
       if (goal.trim()) await supabase.from("goals").insert({ user_id: user.id, title: goal.trim() });
       if (habits.length) await supabase.from("habits").insert(habits.map(name => ({ user_id: user.id, name })));
     },
-    onSuccess: () => { qc.invalidateQueries(); toast.success("Welcome to LifeOS"); navigate({ to: "/" }); },
+    onSuccess: () => { qc.invalidateQueries(); toast.success("Welcome to LifeUpdate"); navigate({ to: "/" }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -44,7 +44,7 @@ function Onboarding() {
     { title: "Welcome", body: (
       <div className="text-center">
         <div className="size-16 rounded-2xl bg-foreground text-background grid place-items-center mx-auto font-display text-3xl shadow-lift">L</div>
-        <h1 className="font-display text-5xl mt-6 leading-none">LifeOS</h1>
+        <h1 className="font-display text-5xl mt-6 leading-none">LifeUpdate</h1>
         <p className="text-muted-foreground mt-3 leading-relaxed max-w-sm mx-auto">A calm command center for your tasks, habits, and ambitions. Let's set you up in under a minute.</p>
       </div>
     )},
@@ -108,7 +108,7 @@ function Onboarding() {
           <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0} className="text-sm text-muted-foreground disabled:opacity-30">Back</button>
           {last ? (
             <button onClick={() => finish.mutate()} disabled={finish.isPending} className="rounded-full bg-foreground text-background px-6 h-11 inline-flex items-center gap-2 shadow-lift tap-scale disabled:opacity-50">
-              <Sparkles className="size-4" /> Enter LifeOS
+              <Sparkles className="size-4" /> Enter LifeUpdate
             </button>
           ) : (
             <button onClick={() => setStep(s => s + 1)} disabled={!canNext} className="rounded-full bg-foreground text-background px-6 h-11 inline-flex items-center gap-2 shadow-lift tap-scale disabled:opacity-40">

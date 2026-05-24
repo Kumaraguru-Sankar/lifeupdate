@@ -3,7 +3,8 @@ import { AppShell } from "@/components/app-shell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { Plus, Flame } from "lucide-react";
+import { Plus, Flame, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { HabitAnalytics } from "@/components/habit-analytics";
 
@@ -70,6 +71,21 @@ function Habits() {
     },
   });
 
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      // Remove logs first (no FK cascade) then habit
+      await supabase.from("habit_logs").delete().eq("habit_id", id);
+      const { error } = await supabase.from("habits").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["habits"] });
+      qc.invalidateQueries({ queryKey: ["habit_logs"] });
+      toast.success("Habit removed");
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not delete habit"),
+  });
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const name = draft.trim();
@@ -109,12 +125,23 @@ function Habits() {
           {habits.map(h => {
             const streak = last7.filter(d => isDone(h.id, dayKey(d))).length;
             return (
-              <li key={h.id} className="rounded-2xl bg-card border border-border/60 p-4 shadow-soft">
+              <li key={h.id} className="group rounded-2xl bg-card border border-border/60 p-4 shadow-soft">
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-medium">{h.name}</span>
-                  <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                    <Flame className="size-3" /> {streak}/7
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                      <Flame className="size-3" /> {streak}/7
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete "${h.name}"? This also removes its check-in history.`)) remove.mutate(h.id);
+                      }}
+                      className="text-muted-foreground hover:text-destructive transition-colors opacity-60 hover:opacity-100"
+                      aria-label="Delete habit"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex gap-1.5">
                   {last7.map(d => {

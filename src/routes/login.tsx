@@ -83,7 +83,7 @@ function Login() {
           <span className="size-14 rounded-2xl bg-grad-sky grid place-items-center shadow-pop">
             <Sparkles className="size-7 text-white drop-shadow" strokeWidth={2.4} />
           </span>
-          <span className="font-display text-3xl">LifeOS</span>
+          <span className="font-display text-3xl">LifeUpdate</span>
         </Link>
 
         <div className="rounded-3xl bg-card/80 glass-strong border border-border/60 shadow-lift p-6 pop-in">

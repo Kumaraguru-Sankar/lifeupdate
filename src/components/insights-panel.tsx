@@ -66,7 +66,7 @@ export function InsightsPanel() {
       <PanelCard>
         <PanelHeader icon={<Sparkles className="size-3.5" />} label="Assistant" to="/assistant" />
         <p className="text-[13px] leading-relaxed text-foreground/85 line-clamp-4 min-h-[3.5rem]">
-          {msg?.content ?? "Ask LifeOS to plan your day, reflect on the week, or surface what matters next."}
+          {msg?.content ?? "Ask LifeUpdate to plan your day, reflect on the week, or surface what matters next."}
         </p>
         <button
           onClick={open}
