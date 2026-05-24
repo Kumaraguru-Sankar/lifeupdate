@@ -61,7 +61,7 @@ export function AppShell({ title, subtitle, children, action, rightPanel, wide }
           <span className="size-9 rounded-2xl bg-grad-sky grid place-items-center shadow-pop">
             <Sparkles className="size-4 text-white" strokeWidth={2.4} />
           </span>
-          <span className="font-display text-2xl">LifeOS</span>
+          <span className="font-display text-2xl">LifeUpdate</span>
         </Link>
 
         <button

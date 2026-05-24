@@ -136,7 +136,7 @@ function Profile() {
 
       <Card title="Support">
         <a
-          href={`mailto:${DEVELOPER_EMAIL}?subject=LifeOS%20feedback`}
+          href={`mailto:${DEVELOPER_EMAIL}?subject=LifeUpdate%20feedback`}
           className="flex items-center justify-between px-4 py-4 hover:bg-muted/50 transition-colors"
         >
           <span className="flex items-center gap-3 text-[15px]">
@@ -155,7 +155,7 @@ function Profile() {
       </button>
 
       <p className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-8">
-        LifeOS · v1.0
+        LifeUpdate · v1.0
       </p>
     </AppShell>
   );
