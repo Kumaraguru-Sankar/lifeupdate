@@ -290,6 +290,10 @@ function Incomes() {
     mutationFn: async (id: string) => { await supabase.from("incomes").delete().eq("id", id); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["incomes_month"] }),
   });
+  const edit = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: any }) => { await supabase.from("incomes").update(patch).eq("id", id); },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["incomes_month"] }),
+  });
 
   return (
     <section>
@@ -313,8 +317,13 @@ function Incomes() {
                   <p className="text-sm capitalize truncate">{i.note || i.source}</p>
                   <p className="text-[11px] text-muted-foreground">{i.source} · {i.received_on}</p>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <span className="font-display text-lg text-accent">+${Number(i.amount).toLocaleString()}</span>
+                  <button onClick={() => {
+                    const a = prompt("New amount", String(i.amount)); if (!a) return;
+                    const n = prompt("Note", i.note ?? ""); if (n === null) return;
+                    edit.mutate({ id: i.id, patch: { amount: +a, note: n || null } });
+                  }} className="text-muted-foreground hover:text-foreground"><Pencil className="size-4" /></button>
                   <button onClick={() => del.mutate(i.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-4" /></button>
                 </div>
               </li>
