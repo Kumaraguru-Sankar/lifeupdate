@@ -111,6 +111,7 @@ export type Database = {
           description: string | null
           id: string
           progress: number
+          sort_order: number
           target_date: string | null
           title: string
           updated_at: string
@@ -122,6 +123,7 @@ export type Database = {
           description?: string | null
           id?: string
           progress?: number
+          sort_order?: number
           target_date?: string | null
           title: string
           updated_at?: string
@@ -133,6 +135,7 @@ export type Database = {
           description?: string | null
           id?: string
           progress?: number
+          sort_order?: number
           target_date?: string | null
           title?: string
           updated_at?: string
@@ -179,6 +182,7 @@ export type Database = {
           icon: string | null
           id: string
           name: string
+          sort_order: number
           user_id: string
         }
         Insert: {
@@ -187,6 +191,7 @@ export type Database = {
           icon?: string | null
           id?: string
           name: string
+          sort_order?: number
           user_id: string
         }
         Update: {
@@ -195,6 +200,7 @@ export type Database = {
           icon?: string | null
           id?: string
           name?: string
+          sort_order?: number
           user_id?: string
         }
         Relationships: []
@@ -524,6 +530,7 @@ export type Database = {
           priority: string
           recurrence: string
           recurrence_parent_id: string | null
+          sort_order: number
           title: string
           updated_at: string
           user_id: string
@@ -537,6 +544,7 @@ export type Database = {
           priority?: string
           recurrence?: string
           recurrence_parent_id?: string | null
+          sort_order?: number
           title: string
           updated_at?: string
           user_id: string
@@ -550,8 +558,36 @@ export type Database = {
           priority?: string
           recurrence?: string
           recurrence_parent_id?: string | null
+          sort_order?: number
           title?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_key: string
+          earned_at: string
+          emoji: string
+          id: string
+          label: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          earned_at?: string
+          emoji?: string
+          id?: string
+          label: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          earned_at?: string
+          emoji?: string
+          id?: string
+          label?: string
           user_id?: string
         }
         Relationships: []
