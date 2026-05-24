@@ -221,6 +221,10 @@ function Expenses() {
     mutationFn: async (id: string) => { await supabase.from("expenses").delete().eq("id", id); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["expenses_month"] }),
   });
+  const edit = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: any }) => { await supabase.from("expenses").update(patch).eq("id", id); },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["expenses_month"] }),
+  });
 
   return (
     <section>
@@ -247,8 +251,13 @@ function Expenses() {
                     <p className="text-[11px] text-muted-foreground">{e.category} · {e.spent_on}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <span className="font-display text-lg">${Number(e.amount).toLocaleString()}</span>
+                  <button onClick={() => {
+                    const a = prompt("New amount", String(e.amount)); if (!a) return;
+                    const n = prompt("Note", e.note ?? ""); if (n === null) return;
+                    edit.mutate({ id: e.id, patch: { amount: +a, note: n || null } });
+                  }} className="text-muted-foreground hover:text-foreground"><Pencil className="size-4" /></button>
                   <button onClick={() => del.mutate(e.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-4" /></button>
                 </div>
               </li>
