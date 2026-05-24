@@ -71,6 +71,21 @@ function Habits() {
     },
   });
 
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      // Remove logs first (no FK cascade) then habit
+      await supabase.from("habit_logs").delete().eq("habit_id", id);
+      const { error } = await supabase.from("habits").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["habits"] });
+      qc.invalidateQueries({ queryKey: ["habit_logs"] });
+      toast.success("Habit removed");
+    },
+    onError: (e: Error) => toast.error(e.message || "Could not delete habit"),
+  });
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const name = draft.trim();
