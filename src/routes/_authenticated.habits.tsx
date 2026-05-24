@@ -3,7 +3,8 @@ import { AppShell } from "@/components/app-shell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { Plus, Flame } from "lucide-react";
+import { Plus, Flame, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { HabitAnalytics } from "@/components/habit-analytics";
 
