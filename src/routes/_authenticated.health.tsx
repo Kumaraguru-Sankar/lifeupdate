@@ -331,8 +331,13 @@ function Nutrition() {
                   {items.map(i => (
                     <li key={i.id} className="py-2 flex items-center justify-between text-sm">
                       <span className="truncate">{i.name}</span>
-                      <span className="flex items-center gap-3 shrink-0">
+                      <span className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-muted-foreground">{i.calories} kcal</span>
+                        <button onClick={() => {
+                          const n = prompt("Name", i.name); if (!n) return;
+                          const c = prompt("Calories", String(i.calories)); if (c === null) return;
+                          edit.mutate({ id: i.id, patch: { name: n, calories: +c || 0 } });
+                        }} className="text-muted-foreground hover:text-foreground"><Pencil className="size-3.5" /></button>
                         <button onClick={() => del.mutate(i.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-3.5" /></button>
                       </span>
                     </li>
