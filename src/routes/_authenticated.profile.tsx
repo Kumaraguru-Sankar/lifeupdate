@@ -41,6 +41,10 @@ function Profile() {
     }
   }, [me]);
 
+  const { data: badges = [] } = useBadges();
+  useEffect(() => { syncBadges().then(n => { if (n.length) qc.invalidateQueries({ queryKey: ["user_badges"] }); }); }, [qc]);
+  const owned = new Set(badges.map(b => b.badge_key));
+
   const saveName = useMutation({
     mutationFn: async (displayName: string) => {
       const { data: { user } } = await supabase.auth.getUser();
