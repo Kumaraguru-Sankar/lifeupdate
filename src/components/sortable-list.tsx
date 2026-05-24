@@ -47,7 +47,9 @@ export function SortableList<T extends { id: string }>({
       <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
         <div className={className}>
           {items.map(item => (
-            <SortableItem key={item.id} id={item.id} renderItem={(handle) => renderItem(item, handle)} />
+            <SortableItem key={item.id} id={item.id}>
+              {(handle) => renderItem(item, handle)}
+            </SortableItem>
           ))}
         </div>
       </SortableContext>
@@ -55,7 +57,7 @@ export function SortableList<T extends { id: string }>({
   );
 }
 
-function SortableItem({ id, renderItem }: { id: string; renderItem: (handle: React.ReactNode) => React.ReactNode }) {
+function SortableItem({ id, children }: { id: string; children: (handle: React.ReactNode) => React.ReactNode }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -65,7 +67,6 @@ function SortableItem({ id, renderItem }: { id: string; renderItem: (handle: Rea
   };
   const handle = (
     <button
-      ref={setNodeRef as any}
       {...attributes}
       {...listeners}
       type="button"
@@ -76,8 +77,8 @@ function SortableItem({ id, renderItem }: { id: string; renderItem: (handle: Rea
     </button>
   );
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      {renderItem(handle)}
+    <div ref={setNodeRef} style={style}>
+      {children(handle)}
     </div>
   );
 }
