@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@/hooks/use-theme";
 import { Moon, Sun, LogOut, Mail, User as UserIcon, LifeBuoy, Check } from "lucide-react";
 import { toast } from "sonner";
+import { useBadges, syncBadges, BADGE_DEFS } from "@/lib/badges";
 
 export const Route = createFileRoute("/_authenticated/profile")({ component: Profile });
 
@@ -39,6 +40,10 @@ function Profile() {
       setEmail(me.email);
     }
   }, [me]);
+
+  const { data: badges = [] } = useBadges();
+  useEffect(() => { syncBadges().then(n => { if (n.length) qc.invalidateQueries({ queryKey: ["user_badges"] }); }); }, [qc]);
+  const owned = new Set(badges.map(b => b.badge_key));
 
   const saveName = useMutation({
     mutationFn: async (displayName: string) => {
@@ -74,6 +79,26 @@ function Profile() {
 
   return (
     <AppShell title="Profile" subtitle="Your account">
+      <section className="mb-6">
+        <h2 className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-3 px-1">
+          Badges <span className="text-foreground/70 normal-case tracking-normal ml-1">{badges.length}/{BADGE_DEFS.length}</span>
+        </h2>
+        <div className="rounded-2xl bg-card border border-border/60 p-4 grid grid-cols-4 gap-3">
+          {BADGE_DEFS.map(b => {
+            const earned = owned.has(b.key);
+            return (
+              <div key={b.key} title={b.label} className={`flex flex-col items-center gap-1 text-center transition-opacity ${earned ? "" : "opacity-25 grayscale"}`}>
+                <div className={`size-12 rounded-2xl grid place-items-center text-2xl ${earned ? "bg-accent/15" : "bg-muted"}`}>{b.emoji}</div>
+                <span className="text-[10px] leading-tight text-muted-foreground">{b.label}</span>
+              </div>
+            );
+          })}
+        </div>
+        {badges.length === 0 && (
+          <p className="text-xs text-muted-foreground mt-2 px-1">Complete tasks, log habits, and keep showing up to earn badges.</p>
+        )}
+      </section>
+
       <Card title="Account">
         <Field icon={<UserIcon className="size-4" />} label="Display name">
           <div className="flex gap-2">

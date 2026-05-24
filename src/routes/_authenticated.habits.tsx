@@ -3,12 +3,14 @@ import { AppShell } from "@/components/app-shell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { Plus, Flame, Trash2 } from "lucide-react";
+import { Plus, Flame, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { HabitAnalytics } from "@/components/habit-analytics";
+import { SortableList } from "@/components/sortable-list";
+import { useBadgeSyncer } from "@/lib/badges";
 
-type Habit = { id: string; name: string };
+type Habit = { id: string; name: string; sort_order: number };
 
 export const Route = createFileRoute("/_authenticated/habits")({ component: Habits });
 
@@ -16,6 +18,7 @@ const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 
 function Habits() {
   const qc = useQueryClient();
+  const syncBadges = useBadgeSyncer();
   const [draft, setDraft] = useState("");
 
   const last7 = Array.from({ length: 7 }).map((_, i) => {
@@ -28,7 +31,10 @@ function Habits() {
   const { data: habits = [] } = useQuery({
     queryKey: ["habits"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("habits").select("id,name").order("created_at");
+      const { data, error } = await supabase
+        .from("habits").select("id,name,sort_order")
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
       if (error) throw error;
       return data as Habit[];
     },
@@ -47,10 +53,14 @@ function Habits() {
     mutationFn: async (name: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
-      const { error } = await supabase.from("habits").insert({ name, user_id: user.id });
+      const nextOrder = (habits[habits.length - 1]?.sort_order ?? 0) + 1;
+      const { error } = await supabase.from("habits").insert({ name, user_id: user.id, sort_order: nextOrder });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["habits"] }),
+    onSuccess: async () => {
+      qc.invalidateQueries({ queryKey: ["habits"] });
+      await syncBadges();
+    },
   });
 
   const toggle = useMutation({
@@ -58,22 +68,29 @@ function Habits() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
       if (exists) {
-        const { error } = await supabase.from("habit_logs").delete().eq("habit_id", habitId).eq("date", date);
-        if (error) throw error;
+        await supabase.from("habit_logs").delete().eq("habit_id", habitId).eq("date", date);
       } else {
-        const { error } = await supabase.from("habit_logs").insert({ habit_id: habitId, date, user_id: user.id });
-        if (error) throw error;
+        await supabase.from("habit_logs").insert({ habit_id: habitId, date, user_id: user.id });
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       qc.invalidateQueries({ queryKey: ["habit_logs"] });
       qc.invalidateQueries({ queryKey: ["xp"] });
+      qc.invalidateQueries({ queryKey: ["game_stats"] });
+      await syncBadges();
     },
+  });
+
+  const rename = useMutation({
+    mutationFn: async ({ id, name }: { id: string; name: string }) => {
+      const { error } = await supabase.from("habits").update({ name }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["habits"] }); toast.success("Habit renamed"); },
   });
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      // Remove logs first (no FK cascade) then habit
       await supabase.from("habit_logs").delete().eq("habit_id", id);
       const { error } = await supabase.from("habits").delete().eq("id", id);
       if (error) throw error;
@@ -84,6 +101,13 @@ function Habits() {
       toast.success("Habit removed");
     },
     onError: (e: Error) => toast.error(e.message || "Could not delete habit"),
+  });
+
+  const reorder = useMutation({
+    mutationFn: async (next: Habit[]) => {
+      await Promise.all(next.map((h, i) => supabase.from("habits").update({ sort_order: i }).eq("id", h.id)));
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["habits"] }),
   });
 
   const submit = (e: React.FormEvent) => {
@@ -97,7 +121,7 @@ function Habits() {
   const isDone = (habitId: string, date: string) => logs.some(l => l.habit_id === habitId && l.date === date);
 
   return (
-    <AppShell title="Habits" subtitle="Tend the small things daily">
+    <AppShell title="Habits" subtitle="Drag to reorder · tap to track">
       <HabitAnalytics />
 
       <form
@@ -121,22 +145,38 @@ function Habits() {
           <p className="mt-3 text-sm text-muted-foreground">Pick one habit to start. Consistency beats intensity.</p>
         </div>
       ) : (
-        <ul className="space-y-3 stagger">
-          {habits.map(h => {
+        <SortableList
+          items={habits}
+          onReorder={next => reorder.mutate(next)}
+          className="space-y-3"
+          renderItem={(h, handle) => {
             const streak = last7.filter(d => isDone(h.id, dayKey(d))).length;
             return (
-              <li key={h.id} className="group rounded-2xl bg-card border border-border/60 p-4 shadow-soft">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="font-medium">{h.name}</span>
-                  <div className="flex items-center gap-3">
+              <div className="group rounded-2xl bg-card border border-border/60 p-4 shadow-soft">
+                <div className="flex items-center justify-between mb-3 gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {handle}
+                    <span className="font-medium truncate">{h.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
                       <Flame className="size-3" /> {streak}/7
                     </span>
                     <button
                       onClick={() => {
+                        const next = prompt("Rename habit", h.name);
+                        if (next && next.trim() && next !== h.name) rename.mutate({ id: h.id, name: next.trim() });
+                      }}
+                      className="text-muted-foreground hover:text-foreground opacity-60 hover:opacity-100"
+                      aria-label="Rename"
+                    >
+                      <Pencil className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => {
                         if (confirm(`Delete "${h.name}"? This also removes its check-in history.`)) remove.mutate(h.id);
                       }}
-                      className="text-muted-foreground hover:text-destructive transition-colors opacity-60 hover:opacity-100"
+                      className="text-muted-foreground hover:text-destructive opacity-60 hover:opacity-100"
                       aria-label="Delete habit"
                     >
                       <Trash2 className="size-4" />
@@ -162,10 +202,10 @@ function Habits() {
                     );
                   })}
                 </div>
-              </li>
+              </div>
             );
-          })}
-        </ul>
+          }}
+        />
       )}
     </AppShell>
   );

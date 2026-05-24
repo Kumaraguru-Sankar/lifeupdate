@@ -3,7 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Activity, Moon, Droplet, Dumbbell, Flame, Scale, Apple, Plus, Trash2 } from "lucide-react";
+import { Activity, Moon, Droplet, Dumbbell, Flame, Scale, Apple, Plus, Trash2, Pencil } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/health")({ component: HealthPage });
@@ -278,6 +278,10 @@ function Nutrition() {
     mutationFn: async (id: string) => { await supabase.from("nutrition_logs").delete().eq("id", id); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["nutrition"] }),
   });
+  const edit = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: any }) => { await supabase.from("nutrition_logs").update(patch).eq("id", id); },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["nutrition"] }),
+  });
 
   return (
     <section>
@@ -327,8 +331,13 @@ function Nutrition() {
                   {items.map(i => (
                     <li key={i.id} className="py-2 flex items-center justify-between text-sm">
                       <span className="truncate">{i.name}</span>
-                      <span className="flex items-center gap-3 shrink-0">
+                      <span className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-muted-foreground">{i.calories} kcal</span>
+                        <button onClick={() => {
+                          const n = prompt("Name", i.name); if (!n) return;
+                          const c = prompt("Calories", String(i.calories)); if (c === null) return;
+                          edit.mutate({ id: i.id, patch: { name: n, calories: +c || 0 } });
+                        }} className="text-muted-foreground hover:text-foreground"><Pencil className="size-3.5" /></button>
                         <button onClick={() => del.mutate(i.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-3.5" /></button>
                       </span>
                     </li>
