@@ -125,12 +125,23 @@ function Habits() {
           {habits.map(h => {
             const streak = last7.filter(d => isDone(h.id, dayKey(d))).length;
             return (
-              <li key={h.id} className="rounded-2xl bg-card border border-border/60 p-4 shadow-soft">
+              <li key={h.id} className="group rounded-2xl bg-card border border-border/60 p-4 shadow-soft">
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-medium">{h.name}</span>
-                  <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                    <Flame className="size-3" /> {streak}/7
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                      <Flame className="size-3" /> {streak}/7
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`Delete "${h.name}"? This also removes its check-in history.`)) remove.mutate(h.id);
+                      }}
+                      className="text-muted-foreground hover:text-destructive transition-colors opacity-60 hover:opacity-100"
+                      aria-label="Delete habit"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex gap-1.5">
                   {last7.map(d => {
