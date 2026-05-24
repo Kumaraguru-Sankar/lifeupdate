@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@/hooks/use-theme";
 import { Moon, Sun, LogOut, Mail, User as UserIcon, LifeBuoy, Check } from "lucide-react";
 import { toast } from "sonner";
+import { useBadges, syncBadges } from "@/lib/badges";
+import { useEffect as useEffectOnce } from "react";
 
 export const Route = createFileRoute("/_authenticated/profile")({ component: Profile });
 
