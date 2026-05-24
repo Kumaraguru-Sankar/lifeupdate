@@ -3,7 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { useMemo, useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Activity, Moon, Droplet, Dumbbell, Flame, Scale, Apple, Plus, Trash2 } from "lucide-react";
+import { Activity, Moon, Droplet, Dumbbell, Flame, Scale, Apple, Plus, Trash2, Pencil } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/health")({ component: HealthPage });
@@ -276,6 +276,10 @@ function Nutrition() {
   });
   const del = useMutation({
     mutationFn: async (id: string) => { await supabase.from("nutrition_logs").delete().eq("id", id); },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["nutrition"] }),
+  });
+  const edit = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: any }) => { await supabase.from("nutrition_logs").update(patch).eq("id", id); },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["nutrition"] }),
   });
 
