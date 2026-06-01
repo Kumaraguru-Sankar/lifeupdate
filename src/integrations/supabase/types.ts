@@ -207,6 +207,7 @@ export type Database = {
       }
       health_logs: {
         Row: {
+          bedtime: string | null
           calories_burned: number
           created_at: string
           id: string
@@ -215,10 +216,12 @@ export type Database = {
           steps: number | null
           updated_at: string
           user_id: string
+          wake_time: string | null
           water_glasses: number | null
           workout_min: number | null
         }
         Insert: {
+          bedtime?: string | null
           calories_burned?: number
           created_at?: string
           id?: string
@@ -227,10 +230,12 @@ export type Database = {
           steps?: number | null
           updated_at?: string
           user_id: string
+          wake_time?: string | null
           water_glasses?: number | null
           workout_min?: number | null
         }
         Update: {
+          bedtime?: string | null
           calories_burned?: number
           created_at?: string
           id?: string
@@ -239,6 +244,7 @@ export type Database = {
           steps?: number | null
           updated_at?: string
           user_id?: string
+          wake_time?: string | null
           water_glasses?: number | null
           workout_min?: number | null
         }
@@ -613,6 +619,39 @@ export type Database = {
           log_date?: string
           user_id?: string
           weight_kg?: number
+        }
+        Relationships: []
+      }
+      workouts: {
+        Row: {
+          calories_burned: number
+          created_at: string
+          duration_min: number
+          id: string
+          log_date: string
+          notes: string | null
+          user_id: string
+          workout_type: string
+        }
+        Insert: {
+          calories_burned?: number
+          created_at?: string
+          duration_min?: number
+          id?: string
+          log_date?: string
+          notes?: string | null
+          user_id: string
+          workout_type: string
+        }
+        Update: {
+          calories_burned?: number
+          created_at?: string
+          duration_min?: number
+          id?: string
+          log_date?: string
+          notes?: string | null
+          user_id?: string
+          workout_type?: string
         }
         Relationships: []
       }
