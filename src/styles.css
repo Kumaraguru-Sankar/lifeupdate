@@ -150,15 +150,24 @@
   html, body, #root { height: 100%; }
   body {
     background-color: var(--color-background);
-    background-image: var(--bg-ambient);
-    background-size: var(--bg-ambient-size, 22px 22px);
-    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     font-feature-settings: "ss01", "cv11";
     overscroll-behavior-y: none;
+    position: relative;
+  }
+  /* Dotted brutalist backdrop — fixed pseudo-layer so the pattern never breaks while scrolling (works on iOS where background-attachment: fixed is ignored). */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--color-background);
+    background-image: var(--bg-ambient);
+    background-size: var(--bg-ambient-size, 22px 22px);
   }
   .font-display {
     font-family: var(--font-display);
