@@ -41,13 +41,11 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
   }, []);
 
   const items: Item[] = useMemo(() => [
-    { id: "today", label: "Go to Today", group: "Navigate", icon: Home, run: () => navigate({ to: "/" }) },
-    { id: "tasks", label: "Go to Tasks", group: "Navigate", icon: CheckCircle2, run: () => navigate({ to: "/tasks" }) },
+    { id: "today", label: "Go to Home", group: "Navigate", icon: Home, run: () => navigate({ to: "/" }) },
     { id: "habits", label: "Go to Habits", group: "Navigate", icon: Flame, run: () => navigate({ to: "/habits" }) },
-    { id: "goals", label: "Go to Goals", group: "Navigate", icon: Target, run: () => navigate({ to: "/goals" }) },
+    { id: "goals", label: "Go to Goals & Tasks", group: "Navigate", icon: Target, run: () => navigate({ to: "/goals" }) },
     { id: "focus", label: "Start Focus Session", group: "Navigate", icon: Timer, run: () => navigate({ to: "/focus" }) },
-    { id: "notes", label: "Go to Notes", group: "Navigate", icon: NotebookPen, run: () => navigate({ to: "/notes" }) },
-    { id: "journal", label: "Go to Journal", group: "Navigate", icon: BookOpen, run: () => navigate({ to: "/journal" }) },
+    { id: "notes", label: "Go to Notes & Journal", group: "Navigate", icon: NotebookPen, run: () => navigate({ to: "/notes" }) },
     { id: "review", label: "Open Daily Review", group: "Navigate", icon: SunIcon, run: () => navigate({ to: "/review" }) },
     { id: "assistant", label: "Ask the Assistant", group: "Navigate", icon: Sparkles, run: () => navigate({ to: "/assistant" }) },
     { id: "profile", label: "Profile & Settings", group: "Navigate", icon: User, run: () => navigate({ to: "/profile" }) },
