@@ -531,6 +531,7 @@ export type Database = {
           completed: boolean
           created_at: string
           due_date: string | null
+          goal_id: string | null
           id: string
           notes: string | null
           priority: string
@@ -545,6 +546,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           due_date?: string | null
+          goal_id?: string | null
           id?: string
           notes?: string | null
           priority?: string
@@ -559,6 +561,7 @@ export type Database = {
           completed?: boolean
           created_at?: string
           due_date?: string | null
+          goal_id?: string | null
           id?: string
           notes?: string | null
           priority?: string
@@ -569,7 +572,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tasks_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_badges: {
         Row: {
