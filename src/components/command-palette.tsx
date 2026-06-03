@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Home, CheckCircle2, Flame, NotebookPen, BookOpen, Target, Timer, Sparkles, User, Sun as SunIcon, Moon, Sun, Search, LogOut } from "lucide-react";
+import { Home, Flame, NotebookPen, Target, Timer, Sparkles, User, Sun as SunIcon, Moon, Sun, Search, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
