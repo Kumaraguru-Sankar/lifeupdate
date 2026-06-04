@@ -1,3 +1,4 @@
+import { safeErrorMessage } from "@/lib/safe-error";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

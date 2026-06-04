@@ -1,3 +1,4 @@
+import { safeErrorMessage } from "@/lib/safe-error";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
