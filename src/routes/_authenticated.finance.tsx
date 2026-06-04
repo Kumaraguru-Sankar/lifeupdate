@@ -88,7 +88,7 @@ function FinancePage() {
     expensesQ.refetch(); incomesQ.refetch(); subsQ.refetch(); invQ.refetch();
   };
 
-  const scrollTo = (ref: React.RefObject<HTMLDivElement>) => {
+  const scrollTo = (ref: React.RefObject<HTMLDivElement | null>) => {
     ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     const input = ref.current?.querySelector<HTMLInputElement>('input[type="number"]');
     setTimeout(() => input?.focus(), 400);
