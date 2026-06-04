@@ -1,3 +1,4 @@
+import { safeErrorMessage } from "@/lib/safe-error";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -41,7 +42,7 @@ function Assistant() {
   const send = useMutation({
     mutationFn: async (message: string) => chat({ data: { message } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["ai_messages"] }),
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(safeErrorMessage(e)),
   });
 
   const reset = useMutation({

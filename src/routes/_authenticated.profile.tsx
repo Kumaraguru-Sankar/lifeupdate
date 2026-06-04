@@ -1,3 +1,4 @@
+import { safeErrorMessage } from "@/lib/safe-error";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -59,7 +60,7 @@ function Profile() {
       qc.invalidateQueries({ queryKey: ["me"] });
       toast.success("Name updated");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(safeErrorMessage(e)),
   });
 
   const saveEmail = useMutation({
@@ -68,7 +69,7 @@ function Profile() {
       if (error) throw error;
     },
     onSuccess: () => toast.success("Check your inbox to confirm the new email"),
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(safeErrorMessage(e)),
   });
 
   const signOut = async () => {
