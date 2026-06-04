@@ -85,6 +85,15 @@ function Home() {
     },
   });
 
+  const notesQ = useQuery({
+    queryKey: ["notes_recent"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("notes").select("id,title,updated_at").order("updated_at", { ascending: false }).limit(3);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const gameQ = useGameStats();
 
   const habits = habitsQ.data ?? [];
