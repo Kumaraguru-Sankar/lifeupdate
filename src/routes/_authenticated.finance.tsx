@@ -1,15 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, Repeat, LineChart as LineIcon, Plus, Trash2, Calendar, Pencil } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, Repeat, LineChart as LineIcon, Plus, Trash2, Calendar, Pencil, AlertTriangle, RefreshCcw } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, Legend } from "recharts";
 
-export const Route = createFileRoute("/_authenticated/finance")({ component: FinancePage });
+export const Route = createFileRoute("/_authenticated/finance")({
+  component: FinancePage,
+  errorComponent: FinanceError,
+  pendingComponent: FinanceLoading,
+});
 
 const monthStart = () => { const d = new Date(); d.setDate(1); return d.toISOString().slice(0, 10); };
 const today = () => new Date().toISOString().slice(0, 10);
+const num = (v: any) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+const safeDate = (v: any) => { if (!v) return null; const d = new Date(v); return Number.isNaN(d.getTime()) ? null : d; };
 
 const CAT_COLORS: Record<string, string> = {
   food: "oklch(0.72 0.15 25)",
@@ -31,17 +37,111 @@ const ASSET_COLORS: Record<string, string> = {
   other: "oklch(0.55 0.02 60)",
 };
 
+function FinanceError({ reset }: { error: Error; reset: () => void }) {
+  return (
+    <AppShell title="Finance" subtitle="Money Operating System">
+      <div className="rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow p-8 text-center max-w-md mx-auto mt-6">
+        <div className="grid place-items-center size-14 rounded-xl bg-[var(--nb-yellow)] border-[3px] border-[var(--nb-ink)] mx-auto mb-4">
+          <AlertTriangle className="size-7" strokeWidth={2.6} />
+        </div>
+        <h2 className="font-display text-2xl mb-1">Finance is taking a breath</h2>
+        <p className="text-sm text-muted-foreground mb-5">We couldn't load your finance data. Try again in a moment.</p>
+        <button onClick={reset} className="inline-flex items-center gap-2 rounded-xl bg-[var(--nb-ink)] text-white px-5 py-2.5 text-sm font-bold border-[3px] border-[var(--nb-ink)] nb-shadow tap-scale">
+          <RefreshCcw className="size-4" strokeWidth={3} /> Try again
+        </button>
+      </div>
+    </AppShell>
+  );
+}
+
+function FinanceLoading() {
+  return (
+    <AppShell title="Finance" subtitle="Money Operating System">
+      <div className="space-y-4 animate-pulse">
+        <div className="h-8 w-48 bg-muted rounded-xl" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-32 rounded-3xl bg-muted" />
+          ))}
+        </div>
+        <div className="h-64 rounded-3xl bg-muted" />
+      </div>
+    </AppShell>
+  );
+}
+
 function FinancePage() {
+  const { expensesQ, incomesQ, subsQ, invQ } = useFinance();
+  const expenseFormRef = useRef<HTMLDivElement>(null);
+  const incomeFormRef = useRef<HTMLDivElement>(null);
+
+  const anyLoading = expensesQ.isPending || incomesQ.isPending || subsQ.isPending || invQ.isPending;
+  const anyError = expensesQ.isError || incomesQ.isError || subsQ.isError || invQ.isError;
+  const allResolved = !anyLoading;
+  const isEmpty = allResolved
+    && (expensesQ.data?.length ?? 0) === 0
+    && (incomesQ.data?.length ?? 0) === 0
+    && (subsQ.data?.length ?? 0) === 0
+    && (invQ.data?.length ?? 0) === 0;
+
+  const refetchAll = () => {
+    expensesQ.refetch(); incomesQ.refetch(); subsQ.refetch(); invQ.refetch();
+  };
+
+  const scrollTo = (ref: React.RefObject<HTMLDivElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const input = ref.current?.querySelector<HTMLInputElement>('input[type="number"]');
+    setTimeout(() => input?.focus(), 400);
+  };
+
+  if (anyLoading) return <FinanceLoading />;
+
+  if (isEmpty && !anyError) {
+    return (
+      <AppShell title="Finance" subtitle="Money Operating System">
+        <div className="rounded-3xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow-lg p-8 md:p-12 text-center max-w-xl mx-auto mt-4">
+          <div className="grid place-items-center size-16 rounded-2xl bg-[var(--nb-green)] border-[3px] border-[var(--nb-ink)] mx-auto mb-5">
+            <Wallet className="size-8" strokeWidth={2.6} />
+          </div>
+          <h2 className="font-display text-3xl md:text-4xl mb-2">Start tracking your finances</h2>
+          <p className="text-muted-foreground mb-6">Add your first income, expense, subscription or investment.</p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <button onClick={() => scrollTo(incomeFormRef)} className="inline-flex items-center gap-2 rounded-xl bg-[var(--nb-green)] text-[var(--nb-ink)] px-5 py-3 text-sm font-black border-[3px] border-[var(--nb-ink)] nb-shadow tap-scale">
+              <Plus className="size-4" strokeWidth={3} /> Add Income
+            </button>
+            <button onClick={() => scrollTo(expenseFormRef)} className="inline-flex items-center gap-2 rounded-xl bg-[var(--nb-pink)] text-white px-5 py-3 text-sm font-black border-[3px] border-[var(--nb-ink)] nb-shadow tap-scale">
+              <Plus className="size-4" strokeWidth={3} /> Add Expense
+            </button>
+          </div>
+        </div>
+        <div className="mt-8 grid gap-5 md:grid-cols-2">
+          <div ref={incomeFormRef}><Incomes /></div>
+          <div ref={expenseFormRef}><Expenses /></div>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="Finance" subtitle="Money Operating System">
       <div className="space-y-8">
+        {anyError && (
+          <div className="rounded-2xl bg-[var(--nb-yellow)]/40 border-[2.5px] border-[var(--nb-ink)] p-3 flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold inline-flex items-center gap-2">
+              <AlertTriangle className="size-4" strokeWidth={3} /> Some data didn't load.
+            </p>
+            <button onClick={refetchAll} className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[var(--nb-ink)] text-white border-[2px] border-[var(--nb-ink)]">
+              <RefreshCcw className="size-3" strokeWidth={3} /> Retry
+            </button>
+          </div>
+        )}
         <Overview />
         <div className="grid gap-5 lg:grid-cols-2">
           <Spending />
           <IncomeVsExpense />
         </div>
-        <Expenses />
-        <Incomes />
+        <div ref={expenseFormRef}><Expenses /></div>
+        <div ref={incomeFormRef}><Incomes /></div>
         <div className="grid gap-5 lg:grid-cols-2">
           <Subscriptions />
           <Investments />
@@ -63,35 +163,39 @@ function Card({ className = "", children }: { className?: string; children: Reac
   return <div className={`rounded-3xl bg-card border border-border/60 shadow-soft p-5 lg:p-6 ${className}`}>{children}</div>;
 }
 
-/* ---------- Overview ---------- */
+/* ---------- Data ---------- */
 
 function useFinance() {
   const since = monthStart();
   const expensesQ = useQuery({
     queryKey: ["expenses_month", since],
     queryFn: async () => {
-      const { data } = await supabase.from("expenses").select("*").gte("spent_on", since).order("spent_on", { ascending: false });
+      const { data, error } = await supabase.from("expenses").select("*").gte("spent_on", since).order("spent_on", { ascending: false });
+      if (error) throw error;
       return (data ?? []) as any[];
     },
   });
   const incomesQ = useQuery({
     queryKey: ["incomes_month", since],
     queryFn: async () => {
-      const { data } = await supabase.from("incomes").select("*").gte("received_on", since).order("received_on", { ascending: false });
+      const { data, error } = await supabase.from("incomes").select("*").gte("received_on", since).order("received_on", { ascending: false });
+      if (error) throw error;
       return (data ?? []) as any[];
     },
   });
   const subsQ = useQuery({
     queryKey: ["subscriptions"],
     queryFn: async () => {
-      const { data } = await supabase.from("subscriptions").select("*").order("next_renewal");
+      const { data, error } = await supabase.from("subscriptions").select("*").order("next_renewal");
+      if (error) throw error;
       return (data ?? []) as any[];
     },
   });
   const invQ = useQuery({
     queryKey: ["investments"],
     queryFn: async () => {
-      const { data } = await supabase.from("investments").select("*").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("investments").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
       return (data ?? []) as any[];
     },
   });
@@ -103,11 +207,11 @@ function Overview() {
   const expenses = expensesQ.data ?? []; const incomes = incomesQ.data ?? [];
   const subs = subsQ.data ?? []; const invs = invQ.data ?? [];
 
-  const income = incomes.reduce((s, i) => s + Number(i.amount), 0);
-  const spent = expenses.reduce((s, e) => s + Number(e.amount), 0);
-  const subTotal = subs.reduce((s, x) => s + (x.cycle === "yearly" ? Number(x.amount) / 12 : x.cycle === "weekly" ? Number(x.amount) * 4.33 : Number(x.amount)), 0);
-  const invested = invs.reduce((s, i) => s + Number(i.invested), 0);
-  const value = invs.reduce((s, i) => s + Number(i.current_value), 0);
+  const income = incomes.reduce((s, i) => s + num(i.amount), 0);
+  const spent = expenses.reduce((s, e) => s + num(e.amount), 0);
+  const subTotal = subs.reduce((s, x) => s + (x.cycle === "yearly" ? num(x.amount) / 12 : x.cycle === "weekly" ? num(x.amount) * 4.33 : num(x.amount)), 0);
+  const invested = invs.reduce((s, i) => s + num(i.invested), 0);
+  const value = invs.reduce((s, i) => s + num(i.current_value), 0);
   const savings = income - spent;
 
   return (
@@ -146,7 +250,10 @@ function Spending() {
   const { expensesQ } = useFinance();
   const data = useMemo(() => {
     const byCat: Record<string, number> = {};
-    for (const e of expensesQ.data ?? []) byCat[e.category] = (byCat[e.category] ?? 0) + Number(e.amount);
+    for (const e of expensesQ.data ?? []) {
+      const cat = e.category ?? "misc";
+      byCat[cat] = (byCat[cat] ?? 0) + num(e.amount);
+    }
     return Object.entries(byCat).map(([name, value]) => ({ name, value }));
   }, [expensesQ.data]);
 
@@ -175,8 +282,8 @@ function IncomeVsExpense() {
   const data = useMemo(() => {
     const map: Record<string, { day: string; income: number; expense: number }> = {};
     const init = (d: string) => (map[d] ??= { day: d.slice(5), income: 0, expense: 0 });
-    for (const i of incomesQ.data ?? []) init(i.received_on).income += Number(i.amount);
-    for (const e of expensesQ.data ?? []) init(e.spent_on).expense += Number(e.amount);
+    for (const i of incomesQ.data ?? []) { if (i.received_on) init(i.received_on).income += num(i.amount); }
+    for (const e of expensesQ.data ?? []) { if (e.spent_on) init(e.spent_on).expense += num(e.amount); }
     return Object.values(map).sort((a, b) => a.day.localeCompare(b.day));
   }, [incomesQ.data, expensesQ.data]);
 
@@ -245,14 +352,14 @@ function Expenses() {
             {(expensesQ.data ?? []).slice(0, 12).map(e => (
               <li key={e.id} className="flex items-center justify-between px-5 py-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="size-2.5 rounded-full shrink-0" style={{ background: CAT_COLORS[e.category] }} />
+                  <span className="size-2.5 rounded-full shrink-0" style={{ background: CAT_COLORS[e.category ?? "misc"] }} />
                   <div className="min-w-0">
-                    <p className="text-sm capitalize truncate">{e.note || e.category}</p>
-                    <p className="text-[11px] text-muted-foreground">{e.category} · {e.spent_on}</p>
+                    <p className="text-sm capitalize truncate">{e.note || e.category || "expense"}</p>
+                    <p className="text-[11px] text-muted-foreground">{e.category ?? "misc"} · {e.spent_on ?? "—"}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="font-display text-lg">${Number(e.amount).toLocaleString()}</span>
+                  <span className="font-display text-lg">${num(e.amount).toLocaleString()}</span>
                   <button onClick={() => {
                     const a = prompt("New amount", String(e.amount)); if (!a) return;
                     const n = prompt("Note", e.note ?? ""); if (n === null) return;
@@ -314,11 +421,11 @@ function Incomes() {
             {(incomesQ.data ?? []).slice(0, 10).map(i => (
               <li key={i.id} className="flex items-center justify-between px-5 py-3">
                 <div className="min-w-0">
-                  <p className="text-sm capitalize truncate">{i.note || i.source}</p>
-                  <p className="text-[11px] text-muted-foreground">{i.source} · {i.received_on}</p>
+                  <p className="text-sm capitalize truncate">{i.note || i.source || "income"}</p>
+                  <p className="text-[11px] text-muted-foreground">{i.source ?? "other"} · {i.received_on ?? "—"}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="font-display text-lg text-accent">+${Number(i.amount).toLocaleString()}</span>
+                  <span className="font-display text-lg text-accent">+${num(i.amount).toLocaleString()}</span>
                   <button onClick={() => {
                     const a = prompt("New amount", String(i.amount)); if (!a) return;
                     const n = prompt("Note", i.note ?? ""); if (n === null) return;
@@ -373,20 +480,23 @@ function Subscriptions() {
       <button onClick={() => form.name && form.amount && add.mutate()} className="w-full rounded-lg bg-foreground text-background px-4 py-2 text-sm tap-scale mb-3">Add subscription</button>
       <ul className="divide-y divide-border/60">
         {(subsQ.data ?? []).map(s => {
-          const days = Math.ceil((new Date(s.next_renewal).getTime() - Date.now()) / 86400000);
+          const d = safeDate(s.next_renewal);
+          const days = d ? Math.ceil((d.getTime() - Date.now()) / 86400000) : null;
           return (
             <li key={s.id} className="flex items-center justify-between py-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{s.name}</p>
-                <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1"><Calendar className="size-3" /> {s.cycle} · in {days}d</p>
+                <p className="text-sm font-medium truncate">{s.name ?? "Untitled"}</p>
+                <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
+                  <Calendar className="size-3" /> {s.cycle ?? "monthly"} · {days !== null ? `in ${days}d` : "—"}
+                </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="font-display text-lg">${Number(s.amount).toLocaleString()}</span>
+                <span className="font-display text-lg">${num(s.amount).toLocaleString()}</span>
                 <button onClick={() => {
-                  const n = prompt("Name", s.name); if (!n) return;
+                  const n = prompt("Name", s.name ?? ""); if (!n) return;
                   const a = prompt("Amount", String(s.amount)); if (!a) return;
-                  const d = prompt("Next renewal (YYYY-MM-DD)", s.next_renewal); if (!d) return;
-                  edit.mutate({ id: s.id, patch: { name: n, amount: +a, next_renewal: d } });
+                  const dd = prompt("Next renewal (YYYY-MM-DD)", s.next_renewal ?? ""); if (!dd) return;
+                  edit.mutate({ id: s.id, patch: { name: n, amount: +a, next_renewal: dd } });
                 }} className="text-muted-foreground hover:text-foreground"><Pencil className="size-4" /></button>
                 <button onClick={() => del.mutate(s.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-4" /></button>
               </div>
@@ -424,7 +534,10 @@ function Investments() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["investments"] }),
   });
 
-  const data = useMemo(() => (invQ.data ?? []).map(i => ({ name: i.name, value: Number(i.current_value), type: i.asset_type })), [invQ.data]);
+  const data = useMemo(
+    () => (invQ.data ?? []).map(i => ({ name: i.name ?? "Asset", value: num(i.current_value), type: i.asset_type ?? "other" })),
+    [invQ.data]
+  );
 
   return (
     <Card>
@@ -452,16 +565,19 @@ function Investments() {
       <button onClick={() => form.name && add.mutate()} className="w-full rounded-lg bg-foreground text-background px-4 py-2 text-sm tap-scale mb-3">Add holding</button>
       <ul className="divide-y divide-border/60">
         {(invQ.data ?? []).map(i => {
-          const change = ((Number(i.current_value) - Number(i.invested)) / Math.max(1, Number(i.invested))) * 100;
+          const invested = num(i.invested);
+          const current = num(i.current_value);
+          const change = ((current - invested) / Math.max(1, invested)) * 100;
+          const assetType = (i.asset_type ?? "other") as string;
           return (
             <li key={i.id} className="flex items-center justify-between py-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium truncate">{i.name}</p>
-                <p className="text-[11px] text-muted-foreground capitalize">{i.asset_type.replace("_", " ")}</p>
+                <p className="text-sm font-medium truncate">{i.name ?? "Asset"}</p>
+                <p className="text-[11px] text-muted-foreground capitalize">{assetType.replace("_", " ")}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <div className="text-right">
-                  <p className="font-display text-base">${Number(i.current_value).toLocaleString()}</p>
+                  <p className="font-display text-base">${current.toLocaleString()}</p>
                   <p className={`text-[11px] ${change >= 0 ? "text-accent" : "text-destructive"}`}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</p>
                 </div>
                 <button onClick={() => {

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Flame, Target, Heart, Wallet, Footprints, Droplets, Moon, ArrowRight, Trophy, Zap, CheckCircle2, TrendingDown, TrendingUp } from "lucide-react";
+import { Flame, Target, Heart, Wallet, Footprints, Droplets, Moon, ArrowRight, Trophy, Zap, CheckCircle2, TrendingDown, TrendingUp, Pencil } from "lucide-react";
 import { ProgressRing } from "@/components/progress-ring";
 import { useGameStats, motivationOfDay } from "@/lib/gamification";
 import { cn } from "@/lib/utils";
@@ -85,6 +85,15 @@ function Home() {
     },
   });
 
+  const notesQ = useQuery({
+    queryKey: ["notes_recent"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("notes").select("id,title,updated_at").order("updated_at", { ascending: false }).limit(3);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const gameQ = useGameStats();
 
   const habits = habitsQ.data ?? [];
@@ -162,7 +171,15 @@ function Home() {
         <Metric label="Burn" value={`${healthQ.data?.calories_burned ?? 0}`} unit="kcal" pct={((healthQ.data?.calories_burned ?? 0) / 500) * 100} icon={Flame} tint="var(--nb-orange)" />
       </section>
 
-      {/* 3. Active goals */}
+      {/* 3. Finance snapshot */}
+      <SectionTitle to="/finance" title="Finance" tint="bg-[var(--nb-yellow)]" icon={Wallet} />
+      <section className="grid grid-cols-3 gap-2.5 mb-6">
+        <MoneyCard label="Income" value={income} tint="var(--nb-green)" icon={TrendingUp} />
+        <MoneyCard label="Spent" value={expenses} tint="var(--nb-pink)" icon={TrendingDown} />
+        <MoneyCard label="Net" value={net} tint={net >= 0 ? "var(--nb-blue)" : "var(--nb-orange)"} icon={Wallet} />
+      </section>
+
+      {/* 4. Active goals */}
       <SectionTitle to="/goals" title="Active goals" tint="bg-[var(--nb-orange)]" icon={Target} />
       <section className="mb-6">
         {goals.length === 0 ? (
@@ -186,7 +203,7 @@ function Home() {
         )}
       </section>
 
-      {/* 4. Daily habits */}
+      {/* 5. Daily habits */}
       <SectionTitle to="/habits" title="Daily habits" tint="bg-[var(--nb-blue)]" icon={Flame} />
       <section className="mb-6">
         {habits.length === 0 ? (
@@ -218,12 +235,25 @@ function Home() {
         )}
       </section>
 
-      {/* 5. Finance snapshot */}
-      <SectionTitle to="/finance" title="Finance" tint="bg-[var(--nb-yellow)]" icon={Wallet} />
-      <section className="grid grid-cols-3 gap-2.5 mb-4">
-        <MoneyCard label="Income" value={income} tint="var(--nb-green)" icon={TrendingUp} />
-        <MoneyCard label="Spent" value={expenses} tint="var(--nb-pink)" icon={TrendingDown} />
-        <MoneyCard label="Net" value={net} tint={net >= 0 ? "var(--nb-blue)" : "var(--nb-orange)"} icon={Wallet} />
+      {/* 6. Recent notes */}
+      <SectionTitle to="/notes" title="Recent notes" tint="bg-[var(--nb-pink)]" icon={Pencil} />
+      <section className="mb-6">
+        {(notesQ.data ?? []).length === 0 ? (
+          <EmptyCard text="No notes yet. Capture a thought." cta="New note" to="/notes" />
+        ) : (
+          <ul className="space-y-2">
+            {(notesQ.data ?? []).map(n => (
+              <li key={n.id}>
+                <Link to="/notes" className="block rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow p-3.5 tap-scale">
+                  <p className="font-display text-base truncate">{n.title || "Untitled"}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 font-bold uppercase tracking-wider">
+                    {new Date(n.updated_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </AppShell>
   );
