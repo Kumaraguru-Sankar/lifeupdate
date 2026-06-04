@@ -221,7 +221,7 @@ function StepLogger() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["step_goal"] }); setEditGoal(false); toast.success("Goal updated"); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => toast.error(safeErrorMessage(e)),
   });
 
   const add = (n: number) => {
@@ -462,7 +462,7 @@ function WeightTracker() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["weight_logs"] }); setW(""); toast.success("Weight logged"); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => toast.error(safeErrorMessage(e)),
   });
   const del = useMutation({
     mutationFn: async (id: string) => { const { error } = await supabase.from("weight_logs").delete().eq("id", id); if (error) throw error; },
@@ -558,7 +558,7 @@ function WorkoutTracker() {
       setForm({ ...form, duration_min: "", calories_burned: "", notes: "" });
       toast.success("Workout logged 💪");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => toast.error(safeErrorMessage(e)),
   });
 
   const del = useMutation({
@@ -671,7 +671,7 @@ function Nutrition() {
       if (error) throw error;
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["nutrition"] }); setForm({ ...form, name: "", calories: "", protein_g: "", carbs_g: "", fat_g: "" }); toast.success("Meal added"); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: any) => toast.error(safeErrorMessage(e)),
   });
   const del = useMutation({
     mutationFn: async (id: string) => { await supabase.from("nutrition_logs").delete().eq("id", id); },

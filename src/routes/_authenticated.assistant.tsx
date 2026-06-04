@@ -41,7 +41,7 @@ function Assistant() {
   const send = useMutation({
     mutationFn: async (message: string) => chat({ data: { message } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["ai_messages"] }),
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(safeErrorMessage(e)),
   });
 
   const reset = useMutation({

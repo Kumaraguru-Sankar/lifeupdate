@@ -59,7 +59,7 @@ function Profile() {
       qc.invalidateQueries({ queryKey: ["me"] });
       toast.success("Name updated");
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(safeErrorMessage(e)),
   });
 
   const saveEmail = useMutation({
@@ -68,7 +68,7 @@ function Profile() {
       if (error) throw error;
     },
     onSuccess: () => toast.success("Check your inbox to confirm the new email"),
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(safeErrorMessage(e)),
   });
 
   const signOut = async () => {

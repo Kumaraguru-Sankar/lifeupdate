@@ -37,7 +37,7 @@ function Onboarding() {
       if (habits.length) await supabase.from("habits").insert(habits.map(name => ({ user_id: user.id, name })));
     },
     onSuccess: () => { qc.invalidateQueries(); toast.success("Welcome to LifeUpdate"); navigate({ to: "/" }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(safeErrorMessage(e)),
   });
 
   const steps = [
