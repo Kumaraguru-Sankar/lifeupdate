@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Flame, Target, Heart, Wallet, Footprints, Droplets, Moon, ArrowRight, Trophy, Zap, CheckCircle2, TrendingDown, TrendingUp } from "lucide-react";
+import { Flame, Target, Heart, Wallet, Footprints, Droplets, Moon, ArrowRight, Trophy, Zap, CheckCircle2, TrendingDown, TrendingUp, Pencil } from "lucide-react";
 import { ProgressRing } from "@/components/progress-ring";
 import { useGameStats, motivationOfDay } from "@/lib/gamification";
 import { cn } from "@/lib/utils";
