@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Flame, Target, Heart, Wallet, Footprints, Droplets, Moon, ArrowRight, Trophy, Zap, CheckCircle2, TrendingDown, TrendingUp, Pencil } from "lucide-react";
+import { Flame, Target, Heart, Wallet, Footprints, Droplets, Moon, ArrowRight, Trophy, Zap, CheckCircle2, TrendingDown, TrendingUp, Pencil, PiggyBank } from "lucide-react";
 import { ProgressRing } from "@/components/progress-ring";
 import { useGameStats, motivationOfDay } from "@/lib/gamification";
 import { cn } from "@/lib/utils";
@@ -72,6 +72,20 @@ function Home() {
       const { data, error } = await supabase.from("expenses").select("amount").gte("spent_on", monthStartStr);
       if (error) throw error;
       return (data ?? []).reduce((s, r) => s + Number(r.amount || 0), 0);
+    },
+  });
+  const netWorthQ = useQuery({
+    queryKey: ["home_networth"],
+    queryFn: async () => {
+      const [{ data: accts }, { data: invs }, { data: liabs }] = await Promise.all([
+        supabase.from("accounts" as any).select("balance").eq("archived", false),
+        supabase.from("investments").select("current_value"),
+        supabase.from("liabilities" as any).select("balance"),
+      ]);
+      const a = (accts ?? []).reduce((s: number, r: any) => s + Number(r.balance || 0), 0);
+      const i = (invs ?? []).reduce((s: number, r: any) => s + Number(r.current_value || 0), 0);
+      const l = (liabs ?? []).reduce((s: number, r: any) => s + Number(r.balance || 0), 0);
+      return a + i - l;
     },
   });
 
@@ -173,11 +187,13 @@ function Home() {
 
       {/* 3. Finance snapshot */}
       <SectionTitle to="/finance" title="Finance" tint="bg-[var(--nb-yellow)]" icon={Wallet} />
-      <section className="grid grid-cols-3 gap-2.5 mb-6">
-        <MoneyCard label="Income" value={income} tint="var(--nb-green)" icon={TrendingUp} />
+      <section className="grid grid-cols-2 gap-2.5 mb-6">
+        <MoneyCard label="Net worth" value={netWorthQ.data ?? 0} tint="var(--nb-yellow)" icon={Wallet} />
         <MoneyCard label="Spent" value={expenses} tint="var(--nb-pink)" icon={TrendingDown} />
-        <MoneyCard label="Net" value={net} tint={net >= 0 ? "var(--nb-blue)" : "var(--nb-orange)"} icon={Wallet} />
+        <MoneyCard label="Income" value={income} tint="var(--nb-green)" icon={TrendingUp} />
+        <MoneyCard label="Savings rate" value={income > 0 ? Math.round(((income - expenses) / income) * 100) : 0} tint={net >= 0 ? "var(--nb-blue)" : "var(--nb-orange)"} icon={PiggyBank} suffix="%" />
       </section>
+
 
       {/* 4. Active goals */}
       <SectionTitle to="/goals" title="Active goals" tint="bg-[var(--nb-orange)]" icon={Target} />
@@ -290,7 +306,7 @@ function Metric({ label, value, unit, pct, icon: Icon, tint }: { label: string; 
   );
 }
 
-function MoneyCard({ label, value, tint, icon: Icon }: { label: string; value: number; tint: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }> }) {
+function MoneyCard({ label, value, tint, icon: Icon, suffix }: { label: string; value: number; tint: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; suffix?: string }) {
   return (
     <div className="rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow p-3">
       <div className="flex items-center justify-between mb-1.5">
@@ -299,10 +315,11 @@ function MoneyCard({ label, value, tint, icon: Icon }: { label: string; value: n
           <Icon className="size-3" strokeWidth={3} />
         </span>
       </div>
-      <div className="font-display text-lg leading-none truncate">${Math.round(value).toLocaleString()}</div>
+      <div className="font-display text-lg leading-none truncate">{suffix === "%" ? `${Math.round(value)}%` : `₹${Math.round(value).toLocaleString()}`}</div>
     </div>
   );
 }
+
 
 function EmptyCard({ text, cta, to }: { text: string; cta: string; to: string }) {
   return (
