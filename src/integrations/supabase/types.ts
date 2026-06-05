@@ -875,7 +875,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      seed_finance_defaults: { Args: { _user_id: string }; Returns: undefined }
+      seed_finance_defaults: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
