@@ -74,6 +74,20 @@ function Home() {
       return (data ?? []).reduce((s, r) => s + Number(r.amount || 0), 0);
     },
   });
+  const netWorthQ = useQuery({
+    queryKey: ["home_networth"],
+    queryFn: async () => {
+      const [{ data: accts }, { data: invs }, { data: liabs }] = await Promise.all([
+        supabase.from("accounts" as any).select("balance").eq("archived", false),
+        supabase.from("investments").select("current_value"),
+        supabase.from("liabilities" as any).select("balance"),
+      ]);
+      const a = (accts ?? []).reduce((s: number, r: any) => s + Number(r.balance || 0), 0);
+      const i = (invs ?? []).reduce((s: number, r: any) => s + Number(r.current_value || 0), 0);
+      const l = (liabs ?? []).reduce((s: number, r: any) => s + Number(r.balance || 0), 0);
+      return a + i - l;
+    },
+  });
 
   const profileQ = useQuery({
     queryKey: ["profile_today"],
