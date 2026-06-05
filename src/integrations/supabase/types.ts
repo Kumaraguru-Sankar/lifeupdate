@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      accounts: {
+        Row: {
+          archived: boolean
+          balance: number
+          color: string
+          created_at: string
+          currency: string
+          icon: string | null
+          id: string
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean
+          balance?: number
+          color?: string
+          created_at?: string
+          currency?: string
+          icon?: string | null
+          id?: string
+          name: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean
+          balance?: number
+          color?: string
+          created_at?: string
+          currency?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_messages: {
         Row: {
           content: string
@@ -34,6 +76,36 @@ export type Database = {
           created_at?: string
           id?: string
           role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      budgets: {
+        Row: {
+          amount: number
+          category_id: string
+          created_at: string
+          id: string
+          month: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category_id: string
+          created_at?: string
+          id?: string
+          month: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string
+          created_at?: string
+          id?: string
+          month?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -104,14 +176,53 @@ export type Database = {
         }
         Relationships: []
       }
+      finance_categories: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          is_default: boolean
+          kind: string
+          name: string
+          sort_order: number
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_default?: boolean
+          kind: string
+          name: string
+          sort_order?: number
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          is_default?: boolean
+          kind?: string
+          name?: string
+          sort_order?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           completed: boolean
           created_at: string
+          current_amount: number
           description: string | null
           id: string
+          kind: string
           progress: number
           sort_order: number
+          target_amount: number | null
           target_date: string | null
           title: string
           updated_at: string
@@ -120,10 +231,13 @@ export type Database = {
         Insert: {
           completed?: boolean
           created_at?: string
+          current_amount?: number
           description?: string | null
           id?: string
+          kind?: string
           progress?: number
           sort_order?: number
+          target_amount?: number | null
           target_date?: string | null
           title: string
           updated_at?: string
@@ -132,10 +246,13 @@ export type Database = {
         Update: {
           completed?: boolean
           created_at?: string
+          current_amount?: number
           description?: string | null
           id?: string
+          kind?: string
           progress?: number
           sort_order?: number
+          target_amount?: number | null
           target_date?: string | null
           title?: string
           updated_at?: string
@@ -338,6 +455,42 @@ export type Database = {
           entry_date?: string
           id?: string
           mood?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      liabilities: {
+        Row: {
+          balance: number
+          created_at: string
+          due_day: number | null
+          id: string
+          interest_rate: number | null
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          due_day?: number | null
+          id?: string
+          interest_rate?: number | null
+          name: string
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          due_day?: number | null
+          id?: string
+          interest_rate?: number | null
+          name?: string
+          type?: string
           updated_at?: string
           user_id?: string
         }
@@ -582,6 +735,57 @@ export type Database = {
           },
         ]
       }
+      transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category_id: string | null
+          created_at: string
+          goal_id: string | null
+          id: string
+          note: string | null
+          occurred_on: string
+          recurrence: string
+          recurring: boolean
+          to_account_id: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          note?: string | null
+          occurred_on?: string
+          recurrence?: string
+          recurring?: boolean
+          to_account_id?: string | null
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          note?: string | null
+          occurred_on?: string
+          recurrence?: string
+          recurring?: boolean
+          to_account_id?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_key: string
@@ -671,7 +875,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      seed_finance_defaults: { Args: { _user_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
