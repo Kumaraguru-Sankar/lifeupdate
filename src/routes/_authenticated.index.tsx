@@ -306,7 +306,7 @@ function Metric({ label, value, unit, pct, icon: Icon, tint }: { label: string; 
   );
 }
 
-function MoneyCard({ label, value, tint, icon: Icon }: { label: string; value: number; tint: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }> }) {
+function MoneyCard({ label, value, tint, icon: Icon, suffix }: { label: string; value: number; tint: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; suffix?: string }) {
   return (
     <div className="rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow p-3">
       <div className="flex items-center justify-between mb-1.5">
@@ -315,10 +315,11 @@ function MoneyCard({ label, value, tint, icon: Icon }: { label: string; value: n
           <Icon className="size-3" strokeWidth={3} />
         </span>
       </div>
-      <div className="font-display text-lg leading-none truncate">${Math.round(value).toLocaleString()}</div>
+      <div className="font-display text-lg leading-none truncate">{suffix === "%" ? `${Math.round(value)}%` : `₹${Math.round(value).toLocaleString()}`}</div>
     </div>
   );
 }
+
 
 function EmptyCard({ text, cta, to }: { text: string; cta: string; to: string }) {
   return (
