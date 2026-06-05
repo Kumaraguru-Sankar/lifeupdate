@@ -101,7 +101,7 @@ function Habits() {
       qc.invalidateQueries({ queryKey: ["habit_logs"] });
       toast.success("Habit removed");
     },
-    onError: (e: Error) => toast.error(e.message || "Could not delete habit"),
+    onError: (e: Error) => toast.error(safeErrorMessage(e, "Could not delete habit")),
   });
 
   const reorder = useMutation({
