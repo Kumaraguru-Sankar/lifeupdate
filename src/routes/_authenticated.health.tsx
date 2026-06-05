@@ -86,7 +86,7 @@ function useHealthPatch() {
       qc.invalidateQueries({ queryKey: ["health"] });
       qc.invalidateQueries({ queryKey: ["health_week"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Couldn't save"),
+    onError: (e: any) => toast.error(safeErrorMessage(e, "Couldn't save")),
   });
 }
 
