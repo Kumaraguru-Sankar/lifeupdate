@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { HabitAnalytics } from "@/components/habit-analytics";
 import { SortableList } from "@/components/sortable-list";
 import { useBadgeSyncer } from "@/lib/badges";
+import { safeErrorMessage } from "@/lib/safe-error";
 
 type Habit = { id: string; name: string; sort_order: number };
 
