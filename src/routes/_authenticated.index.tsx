@@ -187,11 +187,13 @@ function Home() {
 
       {/* 3. Finance snapshot */}
       <SectionTitle to="/finance" title="Finance" tint="bg-[var(--nb-yellow)]" icon={Wallet} />
-      <section className="grid grid-cols-3 gap-2.5 mb-6">
-        <MoneyCard label="Income" value={income} tint="var(--nb-green)" icon={TrendingUp} />
+      <section className="grid grid-cols-2 gap-2.5 mb-6">
+        <MoneyCard label="Net worth" value={netWorthQ.data ?? 0} tint="var(--nb-yellow)" icon={Wallet} />
         <MoneyCard label="Spent" value={expenses} tint="var(--nb-pink)" icon={TrendingDown} />
-        <MoneyCard label="Net" value={net} tint={net >= 0 ? "var(--nb-blue)" : "var(--nb-orange)"} icon={Wallet} />
+        <MoneyCard label="Income" value={income} tint="var(--nb-green)" icon={TrendingUp} />
+        <MoneyCard label="Savings rate" value={income > 0 ? Math.round(((income - expenses) / income) * 100) : 0} tint={net >= 0 ? "var(--nb-blue)" : "var(--nb-orange)"} icon={PiggyBank} suffix="%" />
       </section>
+
 
       {/* 4. Active goals */}
       <SectionTitle to="/goals" title="Active goals" tint="bg-[var(--nb-orange)]" icon={Target} />
