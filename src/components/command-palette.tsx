@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Home, Flame, NotebookPen, Target, Timer, Sparkles, User, Sun as SunIcon, Moon, Sun, Search, LogOut } from "lucide-react";
+import { Home, Flame, NotebookPen, Target, Timer, BarChart3, User, Sun as SunIcon, Moon, Sun, Search, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,7 +47,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
     { id: "focus", label: "Start Focus Session", group: "Navigate", icon: Timer, run: () => navigate({ to: "/focus" }) },
     { id: "notes", label: "Go to Notes & Journal", group: "Navigate", icon: NotebookPen, run: () => navigate({ to: "/notes" }) },
     { id: "review", label: "Open Daily Review", group: "Navigate", icon: SunIcon, run: () => navigate({ to: "/review" }) },
-    { id: "assistant", label: "Ask the Assistant", group: "Navigate", icon: Sparkles, run: () => navigate({ to: "/assistant" }) },
+    { id: "reports", label: "View Reports", group: "Navigate", icon: BarChart3, run: () => navigate({ to: "/reports" }) },
     { id: "profile", label: "Profile & Settings", group: "Navigate", icon: User, run: () => navigate({ to: "/profile" }) },
     { id: "theme", label: theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode", group: "Actions", icon: theme === "dark" ? Sun : Moon, run: toggle },
     { id: "signout", label: "Sign out", group: "Actions", icon: LogOut, run: async () => { await supabase.auth.signOut(); qc.clear(); navigate({ to: "/login" }); } },

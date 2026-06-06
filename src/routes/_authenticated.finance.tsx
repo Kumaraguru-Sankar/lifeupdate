@@ -36,18 +36,18 @@ const fmtPct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(1)}%`;
 const monthLabel = (d: Date) => d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 const dayKey = (d: Date) => d.toISOString().slice(0, 10);
 
-type Tab = "overview" | "transactions" | "budgets" | "subscriptions" | "investments" | "networth" | "goals" | "calendar" | "insights";
+type Tab = "overview" | "transactions" | "budgets" | "subscriptions" | "investments" | "networth" | "goals" | "calendar" | "trends";
 
 const TABS: { id: Tab; label: string; icon: any; tint: string }[] = [
   { id: "overview", label: "Overview", icon: Activity, tint: "var(--nb-yellow)" },
-  { id: "transactions", label: "Transactions", icon: Receipt, tint: "var(--nb-blue)" },
-  { id: "budgets", label: "Budgets", icon: TargetIcon, tint: "var(--nb-orange)" },
+  { id: "transactions", label: "Tx", icon: Receipt, tint: "var(--nb-blue)" },
+  { id: "budgets", label: "Budget", icon: TargetIcon, tint: "var(--nb-orange)" },
   { id: "subscriptions", label: "Subs", icon: Repeat, tint: "var(--nb-pink)" },
   { id: "investments", label: "Invest", icon: LineIcon, tint: "var(--nb-green)" },
-  { id: "networth", label: "Net Worth", icon: Banknote, tint: "var(--nb-yellow)" },
+  { id: "networth", label: "Worth", icon: Banknote, tint: "var(--nb-yellow)" },
   { id: "goals", label: "Goals", icon: PiggyBank, tint: "var(--nb-orange)" },
-  { id: "calendar", label: "Calendar", icon: CalIcon, tint: "var(--nb-blue)" },
-  { id: "insights", label: "Insights", icon: Sparkles, tint: "var(--nb-pink)" },
+  { id: "calendar", label: "Cal", icon: CalIcon, tint: "var(--nb-blue)" },
+  { id: "trends", label: "Trends", icon: TrendingUp, tint: "var(--nb-pink)" },
 ];
 
 /* ---------- shared queries ---------- */
@@ -218,7 +218,7 @@ function FinancePage() {
           {tab === "networth" && <NetWorthTab />}
           {tab === "goals" && <GoalsFinanceTab />}
           {tab === "calendar" && <CalendarTab />}
-          {tab === "insights" && <InsightsTab />}
+          {tab === "trends" && <InsightsTab />}
         </div>
       )}
 

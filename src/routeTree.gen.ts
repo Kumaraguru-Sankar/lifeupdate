@@ -21,7 +21,6 @@ import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated.goals'
 import { Route as AuthenticatedFocusRouteImport } from './routes/_authenticated.focus'
 import { Route as AuthenticatedFinanceRouteImport } from './routes/_authenticated.finance'
-import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated.assistant'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -82,16 +81,10 @@ const AuthenticatedFinanceRoute = AuthenticatedFinanceRouteImport.update({
   path: '/finance',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAssistantRoute = AuthenticatedAssistantRouteImport.update({
-  id: '/assistant',
-  path: '/assistant',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
-  '/assistant': typeof AuthenticatedAssistantRoute
   '/finance': typeof AuthenticatedFinanceRoute
   '/focus': typeof AuthenticatedFocusRoute
   '/goals': typeof AuthenticatedGoalsRoute
@@ -104,7 +97,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/assistant': typeof AuthenticatedAssistantRoute
   '/finance': typeof AuthenticatedFinanceRoute
   '/focus': typeof AuthenticatedFocusRoute
   '/goals': typeof AuthenticatedGoalsRoute
@@ -120,7 +112,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authenticated/assistant': typeof AuthenticatedAssistantRoute
   '/_authenticated/finance': typeof AuthenticatedFinanceRoute
   '/_authenticated/focus': typeof AuthenticatedFocusRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
@@ -137,7 +128,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
-    | '/assistant'
     | '/finance'
     | '/focus'
     | '/goals'
@@ -150,7 +140,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
-    | '/assistant'
     | '/finance'
     | '/focus'
     | '/goals'
@@ -165,7 +154,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
-    | '/_authenticated/assistant'
     | '/_authenticated/finance'
     | '/_authenticated/focus'
     | '/_authenticated/goals'
@@ -269,18 +257,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinanceRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/assistant': {
-      id: '/_authenticated/assistant'
-      path: '/assistant'
-      fullPath: '/assistant'
-      preLoaderRoute: typeof AuthenticatedAssistantRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
   }
 }
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedAssistantRoute: typeof AuthenticatedAssistantRoute
   AuthenticatedFinanceRoute: typeof AuthenticatedFinanceRoute
   AuthenticatedFocusRoute: typeof AuthenticatedFocusRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
@@ -294,7 +274,6 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAssistantRoute: AuthenticatedAssistantRoute,
   AuthenticatedFinanceRoute: AuthenticatedFinanceRoute,
   AuthenticatedFocusRoute: AuthenticatedFocusRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
@@ -318,3 +297,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

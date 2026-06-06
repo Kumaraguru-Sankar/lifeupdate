@@ -1,18 +1,18 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Home, Target, NotebookPen, Moon, Sun, LogOut, User, Sparkles, Heart, Wallet } from "lucide-react";
+import { Home, Target, NotebookPen, Moon, Sun, LogOut, User, Sparkles, Heart, Wallet, BarChart3 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { AIFab } from "@/components/ai-fab";
 
-// Six-tab simplified navigation
+// Seven-tab navigation (Assistant replaced by Reports)
 const tabs = [
   { to: "/",        label: "Home",    icon: Home,        tint: "bg-[var(--nb-yellow)] text-[var(--nb-ink)]" },
   { to: "/health",  label: "Health",  icon: Heart,       tint: "bg-[var(--nb-green)] text-[var(--nb-ink)]" },
   { to: "/finance", label: "Finance", icon: Wallet,      tint: "bg-[var(--nb-yellow)] text-[var(--nb-ink)]" },
   { to: "/goals",   label: "Goals",   icon: Target,      tint: "bg-[var(--nb-orange)] text-[var(--nb-ink)]" },
   { to: "/notes",   label: "Notes",   icon: NotebookPen, tint: "bg-[var(--nb-blue)] text-white" },
+  { to: "/reports", label: "Reports", icon: BarChart3,   tint: "bg-[var(--nb-pink)] text-white" },
   { to: "/profile", label: "Profile", icon: User,        tint: "bg-[var(--nb-ink)] text-white" },
 ] as const;
 
@@ -107,9 +107,6 @@ export function AppShell({ title, subtitle, children, action }: {
         </div>
       </main>
 
-      {/* Floating AI assistant — visible everywhere except /assistant */}
-      <AIFab />
-
       {/* Bottom navigation — mobile only */}
       <BottomNav pathname={pathname} />
     </div>
@@ -123,7 +120,7 @@ function BottomNav({ pathname }: { pathname: string }) {
       className="md:hidden fixed left-3 right-3 bottom-3 z-30 rounded-2xl bg-white border-[3px] border-[var(--nb-ink)] nb-shadow-lg p-1.5"
       style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}
     >
-      <div className="grid grid-cols-6 gap-1">
+      <div className="grid grid-cols-7 gap-0.5">
         {tabs.map(({ to, label, icon: Icon, tint }) => {
           const active = pathname === to;
           return (
