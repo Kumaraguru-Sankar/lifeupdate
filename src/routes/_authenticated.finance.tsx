@@ -10,7 +10,7 @@ import {
   Wallet, TrendingUp, TrendingDown, PiggyBank, Repeat, LineChart as LineIcon,
   Plus, Trash2, Calendar as CalIcon, Pencil, AlertTriangle, RefreshCcw,
   Search, X, ArrowUpRight, ArrowDownRight, Copy, ArrowLeftRight, Target as TargetIcon,
-  Sparkles, Banknote, CreditCard, Receipt, Activity, ChevronLeft, ChevronRight,
+  Banknote, CreditCard, Receipt, Activity, ChevronLeft, ChevronRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/finance")({
@@ -270,27 +270,25 @@ function FinanceLoading() {
 /* ---------- tabs nav ---------- */
 function FinanceTabs({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
   return (
-    <div className="overflow-x-auto -mx-4 px-4 pb-1">
-      <div className="inline-flex gap-2 min-w-full">
-        {TABS.map((t) => {
-          const active = t.id === tab;
-          const Icon = t.icon;
-          return (
-            <button
-              key={t.id}
-              onClick={() => onChange(t.id)}
-              className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border-[2.5px] border-[var(--nb-ink)] whitespace-nowrap transition-all",
-                active ? "text-[var(--nb-ink)] nb-shadow" : "bg-card text-muted-foreground hover:text-foreground"
-              )}
-              style={active ? { background: t.tint } : undefined}
-            >
-              <Icon className="size-3.5" strokeWidth={3} />
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
+    <div className="grid grid-cols-9 gap-1">
+      {TABS.map((t) => {
+        const active = t.id === tab;
+        const Icon = t.icon;
+        return (
+          <button
+            key={t.id}
+            onClick={() => onChange(t.id)}
+            className={cn(
+              "flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tight border-[2px] border-[var(--nb-ink)] transition-all min-w-0",
+              active ? "text-[var(--nb-ink)] nb-shadow" : "bg-card text-muted-foreground hover:text-foreground"
+            )}
+            style={active ? { background: t.tint } : undefined}
+          >
+            <Icon className="size-3.5" strokeWidth={3} />
+            <span className="truncate w-full text-center leading-none">{t.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -1185,7 +1183,7 @@ function InsightsTab() {
       {insights.map((ins, i) => (
         <li key={i} className="rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow p-4 flex gap-3">
           <span className="grid place-items-center size-10 rounded-lg border-[2.5px] border-[var(--nb-ink)] shrink-0" style={{ background: ins.tint }}>
-            <Sparkles className="size-5" strokeWidth={3} />
+            <Activity className="size-5" strokeWidth={3} />
           </span>
           <div>
             <p className="font-display text-lg leading-tight">{ins.title}</p>
