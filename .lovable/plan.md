@@ -1,99 +1,64 @@
+# LifeUpdate → Offline-First Life Analytics Platform
 
-# Finance OS Upgrade
+A large multi-phase upgrade. I'll execute in this order so each phase is shippable on its own.
 
-Transform `/finance` from a basic dashboard into a complete personal finance module while keeping the current Neo Brutalist design language and the rest of LifeUpdate untouched.
+## Phase 1 — Strip all AI
 
-## 1. Data model (single migration)
+- Delete `src/routes/_authenticated.assistant.tsx`, `src/lib/assistant.functions.ts`, `src/components/ai-fab.tsx`, `src/components/insights-panel.tsx` and any AI references in nav/home.
+- Remove "Assistant" tab from the bottom nav in `app-shell.tsx`. Replace with **Reports**.
+- Remove `ai_messages` reads/writes from the UI (keep table; harmless).
+- Replace any "AI Insights" sections in Finance/Home with rule-based **Trends** / **Analytics** panels.
 
-New tables (all RLS-scoped to `auth.uid()`, GRANTs to `authenticated` + `service_role`):
+## Phase 2 — Offline-first (PWA + local cache)
 
-- `accounts` — id, user_id, name, type (`cash|bank|credit_card|wallet|investment|loan`), balance, currency, color, icon, archived, timestamps
-- `finance_categories` — id, user_id, name, kind (`income|expense`), icon, color, sort_order, is_default
-- `transactions` — id, user_id, type (`income|expense|transfer|investment`), amount, account_id, to_account_id (transfers), category_id, note, occurred_on, recurring (bool), recurrence_rule (text), timestamps
-- `budgets` — id, user_id, category_id, month (date, 1st of month), amount
-- `liabilities` — id, user_id, name, type (`loan|credit_card|other`), balance, interest_rate, due_day
-- `finance_goals_link` — extend existing `goals` with optional `target_amount`, `current_amount`, `kind` (`finance|other`) via ALTER
+- Add `vite-plugin-pwa` with `generateSW`, `autoUpdate`, `NetworkFirst` for HTML, `CacheFirst` for hashed assets, exclude `/~oauth`.
+- Guarded registration wrapper per the PWA skill (no SW in dev/preview/iframe; `?sw=off` kill switch).
+- Add `public/manifest.webmanifest` + icons + theme/apple meta tags.
+- Persist React Query cache to **IndexedDB** via `@tanstack/query-persist-client` + `idb-keyval` so previously loaded data is readable offline.
+- Add an **offline write queue** (`src/lib/offline-queue.ts`): every mutation goes through `enqueue(op)` which (a) optimistically updates the query cache and (b) tries the Supabase call; on failure stores the op in IndexedDB and retries when `navigator.onLine` flips true.
+- Online/offline indicator chip in `AppShell`.
 
-Migration also:
-- Adds `is_recurring`, `category_id` to existing `expenses`/`incomes` for back-compat (read both old + new in UI), or we leave legacy tables read-only and write only to `transactions`. We'll **write to `transactions`** going forward; old `expenses`/`incomes`/`subscriptions`/`investments` continue to be read so existing data stays visible.
-- Seeds default categories on first load via a `seed_finance_defaults(user_id)` SQL function called from the app on empty state.
+## Phase 3 — Global time-period filter
 
-## 2. Route structure
+- New `src/lib/period.ts`: presets `today | 7d | 30d | 90d | 6m | 1y | all | custom{from,to}`; helpers `rangeFor(preset)`, `bucketize(range)`.
+- New `src/components/period-picker.tsx`: chunky Neo Brutalist chip row + custom range popover (shadcn Calendar).
+- New `src/hooks/use-period.ts`: stores selected period in `localStorage` per module key (`home`, `health`, `finance`, `goals`, `habits`).
 
-Keep `/finance` as the hub with internal tabs (mobile-friendly chips, no new top-level routes):
+## Phase 4 — Module analytics
 
-```
-/finance
-  ├─ Overview     (default — dashboard)
-  ├─ Transactions
-  ├─ Budgets
-  ├─ Subscriptions
-  ├─ Investments
-  ├─ Net Worth
-  ├─ Goals
-  ├─ Calendar
-  └─ Insights
-```
+Each module gets a **Period picker** at the top + an **Analytics** section. All charts are lightweight inline SVG (line, bar, pie, heatmap) under `src/components/charts/` — no chart lib.
 
-Implemented as a single route file with a `view` search param (`?view=transactions`) so deep links work and the bottom nav stays untouched.
+- **Home (`index.tsx`)**: period picker drives Health/Finance/Goals/Habits snapshot numbers + sparkline.
+- **Health**: trend lines for Steps/Water/Sleep/Calories/Workout; weight + BMI chart (BMI = weight / (height/100)^2 from profile); averages, best day, current streak.
+- **Finance**: Replace the sliding tab chips with a **fixed grid of tabs** (all visible, no horizontal scroll) on the Finance page. Per-period Income / Expenses / Savings / Net Worth trend lines, category pie, subscription cost over time.
+- **Goals**: completion history, success rate, abandoned count, productivity score (tasks done/day).
+- **Habits**: GitHub-style heatmap (existing `habit-analytics` extended), per-habit completion %, streak history.
+- **Notes/Journal**: New `_authenticated.journal.tsx` already-implied via `journal_entries`; group notes & journal by Year → Month → Day tree with search + tag filter. Add `tags text[]` column to notes (migration).
 
-## 3. Components (Neo Brutalist, reuse existing tokens)
+## Phase 5 — Reports
 
-New under `src/components/finance/`:
-- `FinanceTabs.tsx` — chunky chip tabs
-- `StatCard.tsx` — value + delta vs prev month + arrow
-- `TransactionList.tsx` + `TransactionRow.tsx` + `TransactionSheet.tsx` (add/edit/duplicate/delete)
-- `CategoryPicker.tsx`, `AccountPicker.tsx`
-- `BudgetBar.tsx` — progress with warning at 80%, over at 100%
-- `SubscriptionCard.tsx` + monthly total banner
-- `InvestmentCard.tsx` + `AllocationDonut.tsx`
-- `NetWorthCard.tsx` + `NetWorthSparkline.tsx`
-- `FinanceCalendar.tsx` — month grid with dots for bills/subs/SIPs/salary
-- `InsightsList.tsx` — rule-based + optional AI call
-- `FinanceFAB.tsx` — quick-add menu (Expense / Income / Investment / Subscription), shown only on `/finance`
+- New route `src/routes/_authenticated.reports.tsx` (bottom-nav slot vacated by Assistant).
+- Tabs: Weekly / Monthly / Quarterly / Yearly / Custom. Each renders Health + Finance + Goals + Habits summary cards with trend deltas vs previous equivalent period.
+- "Download as PDF" via browser `window.print()` with a print stylesheet.
 
-## 4. Quick-add FAB
+## Migrations (single)
 
-Floating button inside Finance only (not global). Opens a radial/sheet menu with 4 actions, each opening the corresponding sheet pre-filled.
+- `ALTER TABLE notes ADD COLUMN tags text[] NOT NULL DEFAULT '{}';`
+- `ALTER TABLE notes ADD COLUMN category text;`
+(No new tables.)
 
-## 5. AI Insights
+## Out of scope
 
-Reuse Lovable AI Gateway via a new `createServerFn` `getFinanceInsights` that:
-- Fetches last 60 days of transactions for the user (server-side, RLS-scoped)
-- Computes basic aggregates server-side, then asks `google/gemini-2.5-flash` to produce 3–5 short insight strings
-- Cached for 6h via query key including month
-
-Falls back to deterministic rule-based insights if AI fails (spend vs last month, subscription total, savings rate, goal ETA).
-
-## 6. Home screen integration
-
-Update `/_authenticated/index.tsx` Finance Snapshot card to show: Net Worth, Monthly Spending, Monthly Income, Savings Rate (derived from transactions + accounts). Order remains Health → Finance → Goals → Habits → Notes (already correct; just enrich the Finance card).
-
-## 7. Empty states
-
-Every tab gets a Neo Brutalist empty card with "Start building your financial future." + Add Income / Add Expense CTAs that open the FAB sheets. No blank screens, ever (wrapped in route `errorComponent` + per-section try/catch as already exists).
-
-## 8. Out of scope (call out)
-
-- Bank sync / Plaid-style aggregation (no provider configured)
-- Multi-currency conversion (single currency stored per account; display uses profile locale)
-- Real receipt OCR
-- Push notifications for reminders (calendar shows them; no native push)
-
-## Technical notes
-
-- All money stored as `numeric(14,2)`; UI formats with `Intl.NumberFormat` using the user's locale (default `en-IN`, `INR`).
-- Charts: lightweight inline SVG (matches existing `habit-analytics`) — no new chart lib.
-- Sheets use existing shadcn `Sheet` / `Dialog` already in the project.
-- All mutations use `useMutation` + `safeErrorMessage` per existing security memory.
-- Migration is one approval; everything else lands after types regenerate.
+- True multi-device CRDT sync (queue replays in order; last-write-wins is fine).
+- Background sync via SW (queue flushes when the app regains focus + online).
+- PDF generation library (print-to-PDF is sufficient).
 
 ## Build order
 
-1. Migration (schema + seed function + GRANTs + RLS).
-2. Shared finance components + tabs scaffold.
-3. Transactions (core — everything else reads from it).
-4. Budgets → Subscriptions → Investments → Net Worth → Calendar.
-5. Goals link + Insights (AI server fn).
-6. FAB + Home snapshot enrichment.
-7. Verify build, empty states, and that legacy `expenses`/`incomes` rows still display.
+1. Phase 1 (strip AI) — small, shippable.
+2. Phase 3 (period picker primitives) — needed by everything below.
+3. Phase 4 module analytics (Home → Finance → Health → Habits → Goals → Notes/Journal).
+4. Phase 5 Reports route.
+5. Phase 2 PWA + offline queue + Query persistence + notes migration.
+
+This is a multi-turn effort; after the plan is approved I'll start with Phase 1 + the period picker so the UI changes are visible immediately.
