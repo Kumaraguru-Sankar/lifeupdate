@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated.index'
 import { Route as AuthenticatedReviewRouteImport } from './routes/_authenticated.review'
+import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated.reports'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated.profile'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated.onboarding'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated.notes'
@@ -39,6 +40,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
 const AuthenticatedReviewRoute = AuthenticatedReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/notes': typeof AuthenticatedNotesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/review': typeof AuthenticatedReviewRoute
 }
 export interface FileRoutesByTo {
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/notes': typeof AuthenticatedNotesRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/reports': typeof AuthenticatedReportsRoute
   '/review': typeof AuthenticatedReviewRoute
   '/': typeof AuthenticatedIndexRoute
 }
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/review': typeof AuthenticatedReviewRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/notes'
     | '/onboarding'
     | '/profile'
+    | '/reports'
     | '/review'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/notes'
     | '/onboarding'
     | '/profile'
+    | '/reports'
     | '/review'
     | '/'
   id:
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notes'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
+    | '/_authenticated/reports'
     | '/_authenticated/review'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
@@ -199,6 +211,13 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof AuthenticatedReviewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports': {
+      id: '/_authenticated/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/profile': {
@@ -269,6 +288,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedReviewRoute: typeof AuthenticatedReviewRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
@@ -282,6 +302,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedReviewRoute: AuthenticatedReviewRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
