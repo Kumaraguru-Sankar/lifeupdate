@@ -7,6 +7,9 @@ import { Plus, Target, Trash2, Pencil, ChevronDown, ChevronRight, Calendar, Chec
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useBadgeSyncer } from "@/lib/badges";
+import { PeriodPicker } from "@/components/period-picker";
+import { usePeriod } from "@/hooks/use-period";
+import { GoalsAnalytics } from "@/components/goals-analytics";
 
 type Goal = {
   id: string; title: string; description: string | null;
@@ -27,6 +30,7 @@ function Goals() {
   const [draft, setDraft] = useState("");
   const [date, setDate] = useState("");
   const [openIds, setOpenIds] = useState<Record<string, boolean>>({});
+  const [period, setPeriod] = usePeriod("goals");
 
   const { data: goals = [] } = useQuery({
     queryKey: ["goals"],
