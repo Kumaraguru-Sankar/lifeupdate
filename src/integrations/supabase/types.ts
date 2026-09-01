@@ -294,33 +294,62 @@ export type Database = {
       }
       habits: {
         Row: {
+          archived: boolean
           color: string
           created_at: string
+          custom_days: number[]
+          end_date: string | null
+          frequency: string
+          goal_id: string | null
           icon: string | null
           id: string
           name: string
+          reminder_time: string | null
           sort_order: number
+          start_date: string
           user_id: string
         }
         Insert: {
+          archived?: boolean
           color?: string
           created_at?: string
+          custom_days?: number[]
+          end_date?: string | null
+          frequency?: string
+          goal_id?: string | null
           icon?: string | null
           id?: string
           name: string
+          reminder_time?: string | null
           sort_order?: number
+          start_date?: string
           user_id: string
         }
         Update: {
+          archived?: boolean
           color?: string
           created_at?: string
+          custom_days?: number[]
+          end_date?: string | null
+          frequency?: string
+          goal_id?: string | null
           icon?: string | null
           id?: string
           name?: string
+          reminder_time?: string | null
           sort_order?: number
+          start_date?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "habits_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       health_logs: {
         Row: {
