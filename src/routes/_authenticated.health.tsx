@@ -7,6 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Activity, Moon, Droplet, Dumbbell, Flame, Apple, Plus, Trash2, Pencil, RotateCcw, Footprints } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, BarChart, Bar } from "recharts";
 import { toast } from "sonner";
+import { PeriodPicker } from "@/components/period-picker";
+import { usePeriod } from "@/hooks/use-period";
+import { HealthAnalytics } from "@/components/health-analytics";
 
 export const Route = createFileRoute("/_authenticated/health")({ component: HealthPage });
 
@@ -14,10 +17,13 @@ const today = () => new Date().toISOString().slice(0, 10);
 const daysAgo = (n: number) => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); };
 
 function HealthPage() {
+  const [period, setPeriod] = usePeriod("health");
   return (
     <AppShell title="Health" subtitle="Wellness Operating System">
       <div className="space-y-8">
+        <PeriodPicker value={period} onChange={setPeriod} />
         <Overview />
+        <HealthAnalytics period={period} />
         <div className="grid gap-5 lg:grid-cols-2">
           <StepLogger />
           <WaterLogger />
