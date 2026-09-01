@@ -7,6 +7,8 @@ import { Plus, Flame, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { HabitAnalytics } from "@/components/habit-analytics";
+import { PeriodPicker } from "@/components/period-picker";
+import { usePeriod } from "@/hooks/use-period";
 import { SortableList } from "@/components/sortable-list";
 import { useBadgeSyncer } from "@/lib/badges";
 import { safeErrorMessage } from "@/lib/safe-error";
@@ -21,6 +23,7 @@ function Habits() {
   const qc = useQueryClient();
   const syncBadges = useBadgeSyncer();
   const [draft, setDraft] = useState("");
+  const [period, setPeriod] = usePeriod("habits");
 
   const last7 = Array.from({ length: 7 }).map((_, i) => {
     const d = new Date();
@@ -123,7 +126,8 @@ function Habits() {
 
   return (
     <AppShell title="Habits" subtitle="Drag to reorder · tap to track">
-      <HabitAnalytics />
+      <div className="mb-4"><PeriodPicker value={period} onChange={setPeriod} /></div>
+      <HabitAnalytics period={period} habits={habits} />
 
       <form
         onSubmit={submit}
