@@ -158,6 +158,8 @@ function Goals() {
 
   return (
     <AppShell title="Goals" subtitle="What you're building toward">
+      <div className="mb-4"><PeriodPicker value={period} onChange={setPeriod} /></div>
+      <div className="mb-6"><GoalsAnalytics period={period} /></div>
       <form
         onSubmit={e => { e.preventDefault(); if (draft.trim()) addGoal.mutate(); }}
         className="rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] p-3 mb-6 nb-shadow"
