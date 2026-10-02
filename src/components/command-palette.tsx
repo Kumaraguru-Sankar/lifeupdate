@@ -42,7 +42,6 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
 
   const items: Item[] = useMemo(() => [
     { id: "today", label: "Go to Home", group: "Navigate", icon: Home, run: () => navigate({ to: "/" }) },
-    { id: "habits", label: "Go to Habits", group: "Navigate", icon: Flame, run: () => navigate({ to: "/habits" }) },
     { id: "goals", label: "Go to Goals & Tasks", group: "Navigate", icon: Target, run: () => navigate({ to: "/goals" }) },
     { id: "focus", label: "Start Focus Session", group: "Navigate", icon: Timer, run: () => navigate({ to: "/focus" }) },
     { id: "notes", label: "Go to Notes & Journal", group: "Navigate", icon: NotebookPen, run: () => navigate({ to: "/notes" }) },

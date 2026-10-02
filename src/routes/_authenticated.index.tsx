@@ -6,6 +6,7 @@ import { Flame, Target, Heart, Wallet, Footprints, Droplets, Moon, ArrowRight, T
 import { ProgressRing } from "@/components/progress-ring";
 import { useGameStats, motivationOfDay } from "@/lib/gamification";
 import { cn } from "@/lib/utils";
+import { isScheduled, isoDay } from "@/lib/habit-schedule";
 
 export const Route = createFileRoute("/_authenticated/")({ component: Home });
 
@@ -108,9 +109,20 @@ function Home() {
     },
   });
 
+  const tasksTodayQ = useQuery({
+    queryKey: ["tasks_for_goals", "today", today],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tasks").select("id,title,due_date,completed")
+        .eq("completed", false).or(`due_date.is.null,due_date.lte.${today}`)
+        .order("due_date", { ascending: true, nullsFirst: false }).limit(5);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   const gameQ = useGameStats();
 
-  const habits = habitsQ.data ?? [];
+  const habits = ((habitsQ.data ?? []) as any[]).filter(h => !h.archived && isScheduled(h, isoDay(new Date())));
   const logsToday = logsQ.data ?? [];
   const goals = goalsQ.data ?? [];
   const game = gameQ.data;
@@ -219,11 +231,28 @@ function Home() {
         )}
       </section>
 
+      {/* Today's tasks */}
+      <SectionTitle to="/goals" title="Today's tasks" tint="bg-[var(--nb-orange)]" icon={CheckCircle2} />
+      <section className="mb-6">
+        {(tasksTodayQ.data ?? []).length === 0 ? (
+          <EmptyCard text="Nothing due today. Nice." cta="Open goals" to="/goals" />
+        ) : (
+          <ul className="rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow p-3 space-y-1.5">
+            {(tasksTodayQ.data ?? []).map(t => (
+              <li key={t.id} className="flex items-center justify-between rounded-xl px-3 py-2.5 bg-background">
+                <span className="text-sm font-semibold truncate pr-2">{t.title}</span>
+                {t.due_date && t.due_date < today && <span className="text-[11px] font-black uppercase tracking-wider text-[var(--nb-pink)]">Overdue</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       {/* 5. Daily habits */}
-      <SectionTitle to="/habits" title="Daily habits" tint="bg-[var(--nb-blue)]" icon={Flame} />
+      <SectionTitle to="/goals" title="Today's habits" tint="bg-[var(--nb-blue)]" icon={Flame} />
       <section className="mb-6">
         {habits.length === 0 ? (
-          <EmptyCard text="No habits yet. Build one tiny habit." cta="Add habit" to="/habits" />
+          <EmptyCard text="No habits yet. Build one tiny habit." cta="Add habit" to="/goals" />
         ) : (
           <div className="rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow p-3">
             <ul className="space-y-1.5">
@@ -245,7 +274,7 @@ function Home() {
               })}
             </ul>
             <div className="text-[11px] text-muted-foreground text-center pt-2 pb-1 font-bold uppercase tracking-wider">
-              {logsToday.length}/{habits.length} today
+              {habits.filter(h => logsToday.some(l => l.habit_id === h.id)).length}/{habits.length} today
             </div>
           </div>
         )}
