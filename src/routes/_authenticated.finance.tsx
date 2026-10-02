@@ -237,7 +237,7 @@ function FinancePage() {
 }
 
 /* ---------- error / loading ---------- */
-function FinanceError({ reset }: { error: Error; reset: () => void }) {
+function FinanceError({ reset }: { error: unknown; reset: () => void }) {
   return (
     <AppShell title="Finance" subtitle="Money Operating System">
       <div className="rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow p-8 text-center max-w-md mx-auto mt-6">

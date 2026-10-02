@@ -11,7 +11,7 @@ import { useMemo } from "react";
 
 export const Route = createFileRoute("/_authenticated/reports")({
   component: ReportsPage,
-  errorComponent: ({ reset }: { error: Error; reset: () => void }) => (
+  errorComponent: ({ reset }: { error: unknown; reset: () => void }) => (
     <AppShell title="Reports" subtitle="Life Analytics">
       <div className="rounded-2xl bg-card border-[3px] border-[var(--nb-ink)] nb-shadow p-6 text-center">
         <p className="text-sm text-muted-foreground mb-3">Couldn't load reports.</p>
