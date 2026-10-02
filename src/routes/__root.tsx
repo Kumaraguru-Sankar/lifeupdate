@@ -25,7 +25,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   const router = useRouter();
   // Log full details server/console-side only; never surface to users.
   if (typeof console !== "undefined") console.error("[RootError]", error);
