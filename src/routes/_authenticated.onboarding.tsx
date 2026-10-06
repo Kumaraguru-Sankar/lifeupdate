@@ -33,7 +33,8 @@ function Onboarding() {
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not signed in");
-      await supabase.from("profiles").update({ onboarding_completed: true, archetype, vision }).eq("id", user.id);
+      const { error: profileError } = await supabase.from("profiles").update({ onboarding_completed: true, archetype, vision }).eq("id", user.id);
+      if (profileError) throw profileError;
       let goalId: string | null = null;
       if (goal.trim() || habits.length) {
         const { data: g, error } = await supabase.from("goals")
@@ -46,7 +47,14 @@ function Onboarding() {
         if (error) throw error;
       }
     },
-    onSuccess: () => { qc.invalidateQueries(); toast.success("Welcome to LifeUpdate"); navigate({ to: "/" }); },
+    onSuccess: () => {
+      qc.setQueryData<{ onboarding_completed: boolean } | null>(["profile_onboarding"], current =>
+        current ? { ...current, onboarding_completed: true } : { onboarding_completed: true },
+      );
+      qc.invalidateQueries();
+      toast.success("Welcome to LifeUpdate");
+      navigate({ to: "/" });
+    },
     onError: (e: Error) => toast.error(safeErrorMessage(e)),
   });
 
