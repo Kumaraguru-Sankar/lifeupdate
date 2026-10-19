@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -191,36 +191,37 @@ function FinancePage() {
   const [fabOpen, setFabOpen] = useState(false);
   const [sheet, setSheet] = useState<null | { type: "income" | "expense" | "transfer" | "investment" | "subscription"; id?: string; prefill?: any }>(null);
 
-  const anyLoading = data.accountsQ.isPending || data.transactionsQ.isPending || data.categoriesQ.isPending;
+  const queries = Object.values(data);
+  const anyLoading = queries.some((query) => query.isPending);
   if (anyLoading) return <FinanceLoading />;
 
-  const isEmpty =
-    (data.transactionsQ.data?.length ?? 0) === 0 &&
-    (data.legacyExpQ.data?.length ?? 0) === 0 &&
-    (data.legacyIncQ.data?.length ?? 0) === 0 &&
-    (data.subsQ.data?.length ?? 0) === 0 &&
-    (data.invQ.data?.length ?? 0) === 0 &&
-    (data.accountsQ.data?.length ?? 0) === 0;
+  const failedQuery = queries.find((query) => query.isError);
+  if (failedQuery) {
+    return (
+      <FinanceError
+        error={failedQuery.error}
+        reset={() => {
+          void Promise.all(queries.map((query) => query.refetch()));
+        }}
+      />
+    );
+  }
 
   return (
     <AppShell title="Finance" subtitle="Money Operating System">
       <FinanceTabs tab={tab} onChange={setTab} />
 
-      {isEmpty ? (
-        <EmptyState onAdd={(t) => setSheet({ type: t })} />
-      ) : (
-        <div className="mt-5">
-          {tab === "overview" && <OverviewTab data={data} onJump={setTab} />}
-          {tab === "transactions" && <TransactionsTab onEdit={(tx) => setSheet({ type: tx.type, id: tx.id, prefill: tx })} onNew={(t) => setSheet({ type: t })} />}
-          {tab === "budgets" && <BudgetsTab />}
-          {tab === "subscriptions" && <SubscriptionsTab onEdit={(s) => setSheet({ type: "subscription", id: s.id, prefill: s })} onNew={() => setSheet({ type: "subscription" })} />}
-          {tab === "investments" && <InvestmentsTab onEdit={(i) => setSheet({ type: "investment", id: i.id, prefill: i })} onNew={() => setSheet({ type: "investment" })} />}
-          {tab === "networth" && <NetWorthTab />}
-          {tab === "goals" && <GoalsFinanceTab />}
-          {tab === "calendar" && <CalendarTab />}
-          {tab === "trends" && <InsightsTab />}
-        </div>
-      )}
+      <div className="mt-5" role="tabpanel" id={`finance-panel-${tab}`} aria-labelledby={`finance-tab-${tab}`}>
+        {tab === "overview" && <OverviewTab data={data} onJump={setTab} />}
+        {tab === "transactions" && <TransactionsTab onEdit={(tx) => setSheet({ type: tx.type, id: tx.id, prefill: tx })} onNew={(t) => setSheet({ type: t })} />}
+        {tab === "budgets" && <BudgetsTab />}
+        {tab === "subscriptions" && <SubscriptionsTab onEdit={(s) => setSheet({ type: "subscription", id: s.id, prefill: s })} onNew={() => setSheet({ type: "subscription" })} />}
+        {tab === "investments" && <InvestmentsTab onEdit={(i) => setSheet({ type: "investment", id: i.id, prefill: i })} onNew={() => setSheet({ type: "investment" })} />}
+        {tab === "networth" && <NetWorthTab />}
+        {tab === "goals" && <GoalsFinanceTab />}
+        {tab === "calendar" && <CalendarTab />}
+        {tab === "trends" && <InsightsTab />}
+      </div>
 
       {/* FAB */}
       <FinanceFab open={fabOpen} setOpen={setFabOpen} onPick={(t) => { setFabOpen(false); setSheet({ type: t }); }} />
@@ -269,26 +270,40 @@ function FinanceLoading() {
 
 /* ---------- tabs nav ---------- */
 function FinanceTabs({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
+  const tabRefs = useRef<Partial<Record<Tab, HTMLButtonElement | null>>>({});
+
+  useEffect(() => {
+    tabRefs.current[tab]?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+  }, [tab]);
+
   return (
-    <div className="grid grid-cols-9 gap-1">
-      {TABS.map((t) => {
-        const active = t.id === tab;
-        const Icon = t.icon;
-        return (
-          <button
-            key={t.id}
-            onClick={() => onChange(t.id)}
-            className={cn(
-              "flex flex-col items-center justify-center gap-0.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tight border-[2px] border-[var(--nb-ink)] transition-all min-w-0",
-              active ? "text-[var(--nb-ink)] nb-shadow" : "bg-card text-muted-foreground hover:text-foreground"
-            )}
-            style={active ? { background: t.tint } : undefined}
-          >
-            <Icon className="size-3.5" strokeWidth={3} />
-            <span className="truncate w-full text-center leading-none">{t.label}</span>
-          </button>
-        );
-      })}
+    <div className="-mx-1 overflow-x-auto px-1 pb-1 [scrollbar-width:none]" aria-label="Finance sections">
+      <div role="tablist" className="grid min-w-[648px] grid-cols-9 gap-1 md:min-w-0">
+        {TABS.map((t) => {
+          const active = t.id === tab;
+          const Icon = t.icon;
+          return (
+            <button
+              key={t.id}
+              ref={(element) => { tabRefs.current[t.id] = element; }}
+              id={`finance-tab-${t.id}`}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              aria-controls={`finance-panel-${t.id}`}
+              onClick={() => onChange(t.id)}
+              className={cn(
+                "flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg border-[2px] border-[var(--nb-ink)] py-1.5 text-[9px] font-black uppercase tracking-tight transition-all",
+                active ? "text-[var(--nb-ink)] nb-shadow" : "bg-card text-muted-foreground hover:text-foreground"
+              )}
+              style={active ? { background: t.tint } : undefined}
+            >
+              <Icon className="size-3.5" strokeWidth={3} />
+              <span className="w-full truncate text-center leading-none">{t.label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
